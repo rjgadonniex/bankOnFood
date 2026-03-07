@@ -4,6 +4,7 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Search from "../pages/Search";
 import Pantry from "../pages/Pantry";
+import Manage from "../pages/Manage";
 
 export default function App() {
   return (
