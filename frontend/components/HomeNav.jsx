@@ -1,14 +1,12 @@
 import { Navbar, Nav, Container, Button } from "react-bootstrap";
-import { ForkKnife } from "react-bootstrap-icons";
+
+import Logo from "./Logo";
 function HomeNav() {
   return (
-    <Navbar bg="white" expand="md" className="py-2 shadow-sm">
+    <Navbar fixed="top" bg="white" expand="md" className="py-2 shadow-sm">
       <Container fluid>
-        <Navbar.Brand href="/#" className="fw-bold fs-4 d-flex align-items-center">
-          <ForkKnife className="text-primary me-2" />
-          <span class="text-primary">bank</span>
-          <span class="text-success">On</span>
-          <span class="text-primary">Food</span>
+        <Navbar.Brand href="/#" className="fw-bold fs-4">
+          <Logo />
         </Navbar.Brand>
 
         <Navbar.Toggle aria-controls="navbar" className="border-0 shadow-none" />
