@@ -1,8 +1,21 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "../pages/Home";
+import Login from "../pages/Login";
+import Register from "../pages/Register";
+import Search from "../pages/Search";
+import Pantry from "../pages/Pantry";
+
 export default function App() {
   return (
-    <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'sans-serif' }}>
-      <h1 style={{ color: '#005b96' }}>bankOnfood</h1>
-      <p style={{ color: '#4CAF50' }}>add stuff</p>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/pantry/:id" element={<Pantry />} />
+        <Route path="/pantry/:id/manage" element={<Manage />} />
+      </Routes>
+    </Router>
   );
 }
