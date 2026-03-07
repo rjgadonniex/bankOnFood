@@ -1,30 +1,20 @@
-import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "../pages/Home";
+import Login from "../pages/Login";
+import Register from "../pages/Register";
+import Search from "../pages/Search";
+import Pantry from "../pages/Pantry";
 
 export default function App() {
-  const [posts, setPosts] = useState([]);
-
-  useEffect(() => {
-    fetch("http://localhost:5000/posts")
-      .then((res) => res.json())
-      .then((data) => setPosts(data))
-      .catch((err) => console.error(err));
-  }, []);
-
   return (
-    <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'sans-serif' }}>
-      <h1 style={{ color: '#005b96' }}>bankOnfood</h1>
-      <p style={{ color: '#4CAF50' }}>add stuff</p>
-
-      {posts.length === 0 ? (
-        <p>None</p>
-      ) : (
-        posts.map((p) => (
-          <div key={p._id}>
-            <h3>{p.title}</h3>
-            <p>{p.content}</p>
-          </div>
-        ))
-      )}
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/pantry" element={<Pantry />} />
+      </Routes>
+    </Router>
   );
 }
