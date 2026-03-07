@@ -1,4 +1,14 @@
-import "bootstrap/dist/css/bootstrap.min.css";
+import { Container, Row, Col, Button, Card, Badge } from "react-bootstrap";
+import {
+  Map,
+  BoxArrowInRight,
+  Grid,
+  GraphUp,
+  EyeSlash,
+  Cpu,
+  Search,
+  CalendarCheck,
+} from "react-bootstrap-icons";
 import HomeNav from "../components/HomeNav";
 
 export default function Home() {
