@@ -13,7 +13,8 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/search" element={<Search />} />
-        <Route path="/pantry" element={<Pantry />} />
+        <Route path="/pantry/:id" element={<Pantry />} />
+        <Route path="/pantry/:id/manage" element={<Manage />} />
       </Routes>
     </Router>
   );
