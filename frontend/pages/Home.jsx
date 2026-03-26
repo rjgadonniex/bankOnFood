@@ -47,7 +47,7 @@ export default function Home() {
                 </p>
                 <Button
                   variant="link"
-                  href="/map"
+                  href="/search"
                   className="p-0 mt-auto text-primary text-start text-decoration-none fw-bold"
                 >
                   Open Map &rarr;
@@ -91,10 +91,10 @@ export default function Home() {
                 </p>
                 <Button
                   variant="link"
-                  href="/portal"
+                  href="/register/manager"
                   className="p-0 mt-auto text-dark text-start text-decoration-none fw-bold"
                 >
-                  Go to Portal &rarr;
+                  Register as Manager &rarr;
                 </Button>
               </Card>
             </Col>
