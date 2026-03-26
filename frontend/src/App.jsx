@@ -7,6 +7,7 @@ import Register from "../pages/Register";
 import Search from "../pages/Search";
 import Pantry from "../pages/Pantry";
 import Manage from "../pages/Manage";
+import ManagerRegister from "../pages/ManagerRegister";
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/register/manager" element={<ManagerRegister />} />
         <Route path="/search" element={<Search />} />
         <Route path="/pantry/:id" element={<Pantry />} />
         <Route path="/pantry/:id/manage" element={<Manage />} />
