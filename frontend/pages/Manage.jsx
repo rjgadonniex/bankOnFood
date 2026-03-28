@@ -10,7 +10,7 @@ import {
   People,
   CheckCircle,
 } from "react-bootstrap-icons";
-import HomeNav from "../components/HomeNav";
+import NavigationBar from "../components/NavigationBar";
 
 const INITIAL_PANTRY_DATA = {
   1: {
@@ -135,7 +135,7 @@ export default function Manage() {
 
   return (
     <div className="bg-light min-vh-100">
-      <HomeNav />
+      <NavigationBar />
       <Container style={{ paddingTop: "100px" }} className="pb-5">
         <Link
           to={`/pantry/${id || 1}`}

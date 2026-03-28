@@ -13,7 +13,7 @@ import {
   Modal,
 } from "react-bootstrap";
 import { GeoAltFill, Clock, Search, ChevronLeft, BoxSeam } from "react-bootstrap-icons";
-import HomeNav from "../components/HomeNav";
+import NavigationBar from "../components/NavigationBar";
 
 const STATUS_VARIANT = {
   "RUNNING LOW": "warning",
@@ -90,7 +90,7 @@ export default function PantryDetail() {
 
   return (
     <div className="bg-white min-vh-100">
-      <HomeNav />
+      <NavigationBar />
       <Container style={{ paddingTop: "100px" }} className="pb-5">
         <Link
           to="/search"

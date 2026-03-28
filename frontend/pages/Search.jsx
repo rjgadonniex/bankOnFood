@@ -3,7 +3,7 @@ import { Container, Row, Col, Form, InputGroup, Card, Nav, Spinner } from "react
 import { Search as SearchIcon, Map as MapIcon, ListUl, ChevronRight } from "react-bootstrap-icons";
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from "@react-google-maps/api";
 import { Link } from "react-router-dom";
-import HomeNav from "../components/HomeNav";
+import NavigationBar from "../components/NavigationBar";
 
 const PANTRIES = [
   {
@@ -141,7 +141,7 @@ export default function SearchPage() {
 
   return (
     <div className="bg-white vh-100 d-flex flex-column overflow-hidden">
-      <HomeNav />
+      <NavigationBar />
 
       {/* Mobile tab toggle */}
       <div className="d-md-none border-bottom bg-white" style={{ marginTop: 64 }}>

@@ -1,7 +1,7 @@
 import { Navbar, Nav, Container, Button } from "react-bootstrap";
 
 import Logo from "./Logo";
-function HomeNav() {
+function NavigationBar() {
   return (
     <Navbar fixed="top" bg="white" expand="md" className="py-2 shadow-sm">
       <Container fluid>
@@ -28,4 +28,4 @@ function HomeNav() {
   );
 }
 
-export default HomeNav;
+export default NavigationBar;

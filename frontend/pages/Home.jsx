@@ -9,12 +9,12 @@ import {
   Search,
   CalendarCheck,
 } from "react-bootstrap-icons";
-import HomeNav from "../components/HomeNav";
+import NavigationBar from "../components/NavigationBar";
 
 export default function Home() {
   return (
     <div className="bg-white">
-      <HomeNav />
+      <NavigationBar />
 
       {/* HERO SECTION */}
       <section className="py-5 bg-light bg-opacity-25">
