@@ -4,7 +4,7 @@ export default function Test() {
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/posts")
+    fetch("http://localhost:5001/posts")
       .then((res) => res.json())
       .then((data) => setPosts(data))
       .catch((err) => console.error(err));
