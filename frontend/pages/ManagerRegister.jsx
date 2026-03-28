@@ -11,6 +11,7 @@ import {
   Telephone,
   Globe,
   ArrowRight,
+  Clock,
 } from "react-bootstrap-icons";
 
 export default function ManagerRegister() {
@@ -23,7 +24,8 @@ export default function ManagerRegister() {
     <div className="bg-light min-vh-100 d-flex align-items-center py-5">
       <Container>
         <Row className="justify-content-center">
-          <Col md={8} lg={6}>
+          <Col md={8} lg={7}>
+            {" "}
             <div className="mb-4 d-flex justify-content-between align-items-center">
               <Button
                 variant="link"
@@ -35,7 +37,6 @@ export default function ManagerRegister() {
               </Button>
               <span className="text-muted small fw-bold">Step {step} of 2</span>
             </div>
-
             <Card className="border-0 rounded-4 shadow-sm p-4 p-md-5 bg-white">
               <ProgressBar
                 variant="success"
@@ -59,7 +60,9 @@ export default function ManagerRegister() {
                 {step === 1 ? (
                   <>
                     <Form.Group className="mb-3" controlId="formName">
-                      <Form.Label className="small fw-bold text-secondary">Full Name</Form.Label>
+                      <Form.Label className="small fw-bold text-secondary text-uppercase">
+                        Full Name
+                      </Form.Label>
                       <div className="input-group">
                         <span className="input-group-text bg-light border-end-0">
                           <Person className="text-muted" />
@@ -67,13 +70,13 @@ export default function ManagerRegister() {
                         <Form.Control
                           type="text"
                           placeholder="John Doe"
-                          className="bg-light border-start-0 ps-0"
+                          className="bg-light border-start-0 ps-0 rounded-end-3"
                         />
                       </div>
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="formEmail">
-                      <Form.Label className="small fw-bold text-secondary">
+                      <Form.Label className="small fw-bold text-secondary text-uppercase">
                         Email Address
                       </Form.Label>
                       <div className="input-group">
@@ -83,7 +86,7 @@ export default function ManagerRegister() {
                         <Form.Control
                           type="email"
                           placeholder="name@example.com"
-                          className="bg-light border-start-0 ps-0"
+                          className="bg-light border-start-0 ps-0 rounded-end-3"
                         />
                       </div>
                     </Form.Group>
@@ -91,22 +94,24 @@ export default function ManagerRegister() {
                     <Row>
                       <Col md={6}>
                         <Form.Group className="mb-3" controlId="formPassword">
-                          <Form.Label className="small fw-bold text-secondary">Password</Form.Label>
+                          <Form.Label className="small fw-bold text-secondary text-uppercase">
+                            Password
+                          </Form.Label>
                           <div className="input-group">
                             <span className="input-group-text bg-light border-end-0">
                               <Lock className="text-muted" />
                             </span>
                             <Form.Control
                               type="password"
-                              placeholder="Enter your password"
-                              className="bg-light border-start-0 ps-0"
+                              placeholder="Create password"
+                              className="bg-light border-start-0 ps-0 rounded-end-3"
                             />
                           </div>
                         </Form.Group>
                       </Col>
                       <Col md={6}>
                         <Form.Group className="mb-3" controlId="formConfirmPassword">
-                          <Form.Label className="small fw-bold text-secondary">
+                          <Form.Label className="small fw-bold text-secondary text-uppercase">
                             Confirm Password
                           </Form.Label>
                           <div className="input-group">
@@ -115,8 +120,8 @@ export default function ManagerRegister() {
                             </span>
                             <Form.Control
                               type="password"
-                              placeholder="Confirm your password"
-                              className="bg-light border-start-0 ps-0"
+                              placeholder="Repeat password"
+                              className="bg-light border-start-0 ps-0 rounded-end-3"
                             />
                           </div>
                         </Form.Group>
@@ -126,45 +131,91 @@ export default function ManagerRegister() {
                     <Button
                       variant="success"
                       onClick={nextStep}
-                      className="w-100 py-2 rounded-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 mt-4"
+                      className="w-100 py-3 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 mt-4"
                     >
                       Next: Pantry Details <ArrowRight size={20} />
                     </Button>
                   </>
                 ) : (
                   <>
-                    <Form.Group className="mb-3" controlId="pantryName">
-                      <Form.Label className="small fw-bold text-secondary">Pantry Name</Form.Label>
-                      <div className="input-group">
-                        <span className="input-group-text bg-light border-end-0">
-                          <Shop className="text-muted" />
-                        </span>
-                        <Form.Control
-                          type="text"
-                          placeholder="Community Food Bank"
-                          className="bg-light border-start-0 ps-0"
-                        />
-                      </div>
-                    </Form.Group>
-
-                    <Form.Group className="mb-3" controlId="pantryLocation">
-                      <Form.Label className="small fw-bold text-secondary">Address</Form.Label>
-                      <div className="input-group">
-                        <span className="input-group-text bg-light border-end-0">
-                          <GeoAlt className="text-muted" />
-                        </span>
-                        <Form.Control
-                          type="text"
-                          placeholder="123 Street, City, ST 12345"
-                          className="bg-light border-start-0 ps-0"
-                        />
-                      </div>
-                    </Form.Group>
-
                     <Row>
+                      <Col md={12}>
+                        <Form.Group className="mb-3" controlId="pantryName">
+                          <Form.Label className="small fw-bold text-secondary text-uppercase">
+                            Pantry Name
+                          </Form.Label>
+                          <div className="input-group">
+                            <span className="input-group-text bg-light border-end-0">
+                              <Shop className="text-muted" />
+                            </span>
+                            <Form.Control
+                              type="text"
+                              placeholder="Community Food Bank"
+                              className="bg-light border-start-0 ps-0 rounded-end-3"
+                            />
+                          </div>
+                        </Form.Group>
+                      </Col>
+
+                      <Col md={12}>
+                        <Form.Group className="mb-3" controlId="pantryLocation">
+                          <Form.Label className="small fw-bold text-secondary text-uppercase">
+                            Address / Location
+                          </Form.Label>
+                          <div className="input-group">
+                            <span className="input-group-text bg-light border-end-0">
+                              <GeoAlt className="text-muted" />
+                            </span>
+                            <Form.Control
+                              type="text"
+                              placeholder="123 Street, City, ST 12345"
+                              className="bg-light border-start-0 ps-0 rounded-end-3"
+                            />
+                          </div>
+                        </Form.Group>
+                      </Col>
+
+                      <Col md={6}>
+                        <Form.Group className="mb-3" controlId="pantryEmail">
+                          <Form.Label className="small fw-bold text-secondary text-uppercase">
+                            Public Contact Email
+                          </Form.Label>
+                          <div className="input-group">
+                            <span className="input-group-text bg-light border-end-0">
+                              <Envelope className="text-muted" />
+                            </span>
+                            <Form.Control
+                              type="email"
+                              placeholder="info@pantry.org"
+                              className="bg-light border-start-0 ps-0 rounded-end-3"
+                            />
+                          </div>
+                        </Form.Group>
+                      </Col>
+
+                      <Col md={6}>
+                        <Form.Group className="mb-3" controlId="pantryHours">
+                          <Form.Label className="small fw-bold text-secondary text-uppercase">
+                            Operating Hours
+                          </Form.Label>
+                          <div className="input-group">
+                            <span className="input-group-text bg-light border-end-0">
+                              <Clock className="text-muted" />
+                            </span>
+                            <Form.Control
+                              type="text"
+                              placeholder="e.g. 9AM - 5PM"
+                              className="bg-light border-start-0 ps-0 rounded-end-3"
+                            />
+                          </div>
+                        </Form.Group>
+                      </Col>
+
                       <Col md={6}>
                         <Form.Group className="mb-3" controlId="pantryPhone">
-                          <Form.Label className="small fw-bold text-secondary">Phone</Form.Label>
+                          <Form.Label className="small fw-bold text-secondary text-uppercase">
+                            Phone
+                          </Form.Label>
                           <div className="input-group">
                             <span className="input-group-text bg-light border-end-0">
                               <Telephone className="text-muted" />
@@ -172,14 +223,17 @@ export default function ManagerRegister() {
                             <Form.Control
                               type="tel"
                               placeholder="(123) 456-7890"
-                              className="bg-light border-start-0 ps-0"
+                              className="bg-light border-start-0 ps-0 rounded-end-3"
                             />
                           </div>
                         </Form.Group>
                       </Col>
+
                       <Col md={6}>
                         <Form.Group className="mb-3" controlId="pantryWebsite">
-                          <Form.Label className="small fw-bold text-secondary">Website</Form.Label>
+                          <Form.Label className="small fw-bold text-secondary text-uppercase">
+                            Website
+                          </Form.Label>
                           <div className="input-group">
                             <span className="input-group-text bg-light border-end-0">
                               <Globe className="text-muted" />
@@ -187,7 +241,7 @@ export default function ManagerRegister() {
                             <Form.Control
                               type="url"
                               placeholder="https://www.example.com/"
-                              className="bg-light border-start-0 ps-0"
+                              className="bg-light border-start-0 ps-0 rounded-end-3"
                             />
                           </div>
                         </Form.Group>
@@ -197,7 +251,7 @@ export default function ManagerRegister() {
                     <Button
                       variant="success"
                       type="submit"
-                      className="w-100 py-2 rounded-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 mt-4"
+                      className="w-100 py-3 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 mt-4"
                     >
                       <PersonPlus size={20} /> Complete Registration
                     </Button>
