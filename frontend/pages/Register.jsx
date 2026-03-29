@@ -1,7 +1,57 @@
-import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
+import { useState } from "react";
+import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
 import { PersonPlus, Envelope, Lock, ArrowLeft, Person } from "react-bootstrap-icons";
+import axios from "axios";
 
 export default function Register() {
+  // hold form data and UI messages
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // handle input changes
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // handle Form Submission
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevents the page from reloading
+    setError("");
+    setSuccess("");
+
+    // basic validation
+    if (formData.password !== formData.confirmPassword) {
+      return setError("Passwords do not match.");
+    }
+
+    setLoading(true);
+    try {
+      // send data to your Node backend
+      const response = await axios.post("http://localhost:5001/api/auth/register", {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: "user" // Hardcoded to 'user' since managers have their own page
+      });
+
+      setSuccess(response.data.message);
+      // clear form after success
+      setFormData({ name: "", email: "", password: "", confirmPassword: "" });
+    } catch (err) {
+      // grab the error message sent from the backend (like "Email already exists")
+      setError(err.response?.data?.message || "An error occurred during registration.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="bg-light min-vh-100 d-flex align-items-center py-5">
       <Container>
@@ -23,7 +73,11 @@ export default function Register() {
                 <h2 className="fw-bold text-dark">Create Account</h2>
               </div>
 
-              <Form>
+              {/* Display Error or Success Messages */}
+              {error && <Alert variant="danger">{error}</Alert>}
+              {success && <Alert variant="success">{success}</Alert>}
+
+              <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3" controlId="formName">
                   <Form.Label className="small fw-bold text-secondary">Full Name</Form.Label>
                   <div className="input-group">
@@ -32,6 +86,10 @@ export default function Register() {
                     </span>
                     <Form.Control
                       type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
                       placeholder="John Doe"
                       className="bg-light border-start-0 ps-0"
                     />
@@ -46,6 +104,10 @@ export default function Register() {
                     </span>
                     <Form.Control
                       type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
                       placeholder="name@example.com"
                       className="bg-light border-start-0 ps-0"
                     />
@@ -62,7 +124,11 @@ export default function Register() {
                         </span>
                         <Form.Control
                           type="password"
-                          placeholder="Enter your password"
+                          name="password"
+                          value={formData.password}
+                          onChange={handleChange}
+                          required
+                          placeholder="Create password"
                           className="bg-light border-start-0 ps-0"
                         />
                       </div>
@@ -79,7 +145,11 @@ export default function Register() {
                         </span>
                         <Form.Control
                           type="password"
-                          placeholder="Confirm your password"
+                          name="confirmPassword"
+                          value={formData.confirmPassword}
+                          onChange={handleChange}
+                          required
+                          placeholder="Confirm password"
                           className="bg-light border-start-0 ps-0"
                         />
                       </div>
@@ -90,10 +160,11 @@ export default function Register() {
                 <Button
                   variant="success"
                   type="submit"
-                  className="w-100 py-2 rounded-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 mb-4"
+                  disabled={loading}
+                  className="w-100 py-2 rounded-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 mb-4 mt-2"
                 >
                   <PersonPlus size={20} />
-                  Create Account
+                  {loading ? "Creating Account..." : "Create Account"}
                 </Button>
 
                 <div className="text-center">
