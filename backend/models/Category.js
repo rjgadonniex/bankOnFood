@@ -1,11 +1,13 @@
 const mongoose = require('mongoose');
 
 const CategorySchema = mongoose.Schema({
-  manager: {
-    type: String,
-    required: true,
-    unqiue: true
-  },
+  
+  pantryID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Pantry",
+        required: true,
+        unqiue: true
+    },
 
   description: {
     type: String
