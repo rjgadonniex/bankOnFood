@@ -62,10 +62,12 @@ export default function PantryDetail() {
   const [showPledgeModal, setShowPledgeModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [pledgeQuantity, setPledgeQuantity] = useState("");
+  const [pledgeUnit, setPledgeUnit] = useState("");
   const [donationForm, setDonationForm] = useState({
     name: "",
     category: "Non-Perishables",
     quantity: "",
+    unit: "",
   });
 
   const handleGeneralDonation = (e) => {
@@ -284,6 +286,21 @@ export default function PantryDetail() {
                   onChange={(e) => setPledgeQuantity(e.target.value)}
                   placeholder="0"
                 />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label className="small fw-bold text-muted">UNIT</Form.Label>
+                <Form.Select
+                  value={pledgeUnit}
+                  onChange={(e) => setPledgeUnit(e.target.value)}
+                  required
+                >
+                  <option value="">Select unit</option>
+                  <option value="lbs">lbs (pounds)</option>
+                  <option value="cans">cans</option>
+                  <option value="boxes">boxes</option>
+                  <option value="bags">bags</option>
+                  <option value="units">units</option>
+                </Form.Select>
               </Form.Group>
             </Modal.Body>
             <Modal.Footer className="border-0">
