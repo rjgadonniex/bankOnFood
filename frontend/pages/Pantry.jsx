@@ -32,6 +32,7 @@ const INITIAL_DATA = {
         name: "Canned Black Beans",
         category: "Non-Perishables",
         quantity: "45",
+        unit: "cans",
         status: "RUNNING LOW",
         wishlist: true,
       },
@@ -40,6 +41,7 @@ const INITIAL_DATA = {
         name: "Whole Wheat Pasta",
         category: "Dry Goods",
         quantity: "120",
+        unit: "lbs",
         status: "IN STOCK",
         wishlist: false,
       },
@@ -48,6 +50,7 @@ const INITIAL_DATA = {
         name: "Peanut Butter (16oz)",
         category: "Non-Perishables",
         quantity: "8",
+        unit: "units",
         status: "CRITICAL",
         wishlist: true,
       },
@@ -80,7 +83,7 @@ export default function PantryDetail() {
     };
     setPantry({ ...pantry, inventory: [newItem, ...pantry.inventory] });
     setShowDonationModal(false);
-    setDonationForm({ name: "", category: "Non-Perishables", quantity: "" });
+    setDonationForm({ name: "", category: "Non-Perishables", quantity: "", unit: "" });
   };
 
   const handlePledgeSubmit = (e) => {
@@ -88,6 +91,7 @@ export default function PantryDetail() {
     alert(`Pledged ${pledgeQuantity} units of ${selectedItem.name}.`);
     setShowPledgeModal(false);
     setPledgeQuantity("");
+    setPledgeUnit("");
   };
 
   return (
@@ -148,6 +152,7 @@ export default function PantryDetail() {
                 <th className="ps-4 py-3">ITEM NAME</th>
                 <th className="py-3">CATEGORY</th>
                 <th className="py-3">QUANTITY</th>
+                <th className="py-3">UNIT</th>
                 <th className="py-3">STATUS</th>
                 <th className="pe-4 py-3 text-end">ACTION</th>
               </tr>
@@ -158,6 +163,7 @@ export default function PantryDetail() {
                   <td className="ps-4 fw-bold">{item.name}</td>
                   <td className="text-secondary">{item.category}</td>
                   <td>{item.quantity}</td>
+                  <td className="text-secondary">{item.unit}</td>
                   <td>
                     <Badge
                       bg={STATUS_VARIANT[item.status] || "secondary"}
@@ -229,21 +235,21 @@ export default function PantryDetail() {
                     placeholder="0" // Added placeholder
                   />
                 </Col>
-                  <Form.Group className="mb-3">
-                    <Form.Label className="small fw-bold">UNIT</Form.Label>
-                    <Form.Select
-                      value={donationForm.unit}
-                      onChange={(e) => setDonationForm({ ...donationForm, unit: e.target.value })}
-                      required
-                    >
-                      <option value="">Select unit</option>
-                      <option value="lbs">lbs (pounds)</option>
-                      <option value="cans">cans</option>
-                      <option value="boxes">boxes</option>
-                      <option value="bags">bags</option>
-                      <option value="units">units</option>
-                    </Form.Select>
-                  </Form.Group>
+                <Col>
+                  <Form.Label className="small fw-bold">UNIT</Form.Label>
+                  <Form.Select
+                    value={donationForm.unit}
+                    onChange={(e) => setDonationForm({ ...donationForm, unit: e.target.value })}
+                    required
+                  >
+                    <option value="">Select unit</option>
+                    <option value="lbs">lbs (pounds)</option>
+                    <option value="cans">cans</option>
+                    <option value="boxes">boxes</option>
+                    <option value="bags">bags</option>
+                    <option value="units">units</option>
+                  </Form.Select>
+                </Col>
               </Row>
             </Modal.Body>
             <Modal.Footer className="border-0">
