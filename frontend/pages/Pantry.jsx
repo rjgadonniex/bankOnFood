@@ -227,6 +227,21 @@ export default function PantryDetail() {
                     placeholder="0" // Added placeholder
                   />
                 </Col>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="small fw-bold">UNIT</Form.Label>
+                    <Form.Select
+                      value={donationForm.unit}
+                      onChange={(e) => setDonationForm({ ...donationForm, unit: e.target.value })}
+                      required
+                    >
+                      <option value="">Select unit</option>
+                      <option value="lbs">lbs (pounds)</option>
+                      <option value="cans">cans</option>
+                      <option value="boxes">boxes</option>
+                      <option value="bags">bags</option>
+                      <option value="units">units</option>
+                    </Form.Select>
+                  </Form.Group>
               </Row>
             </Modal.Body>
             <Modal.Footer className="border-0">
