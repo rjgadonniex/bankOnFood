@@ -14,8 +14,10 @@ const ItemSchema = mongoose.Schema({
     },
     pantryID: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Pantry"
+        ref: "Pantry",
+        required: true
     },
+
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Category"

@@ -9,7 +9,8 @@ const PantrySchema = mongoose.Schema({
 
   manager: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
+    ref: "User",
+    required: true
   }
 });
 
