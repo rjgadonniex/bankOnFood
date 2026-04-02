@@ -7,14 +7,15 @@ router.post('/', async (req, res) => {
 
   try {
 
-    const { donator, item, quantity, status} = req.body;
+    const { donator, item, quantity, unit, pantry} = req.body;
     
         //add to database
         const donation = new DonationPledge({
             donator,
             item,
             quantity, 
-            status
+            unit,
+            pantry
             //date will default to current date
         });
     //save to database and send response

@@ -7,7 +7,7 @@ router.post('/', async (req, res) => {
 
   try {
 
-    const { name, quantity, status, pantryID, category} = req.body;
+    const { name, quantity, status, pantryID, category, unit} = req.body;
     
         // check if the item already exists in the database for this pantry
         const existingItem = await Item.findOne({ name: name, pantryID: pantryID });
@@ -18,6 +18,7 @@ router.post('/', async (req, res) => {
         const item = new Item({
         name,
         quantity: quantity || 0, //if not quantity provided, default to 0
+        unit,
         status, 
         pantryID,
         category
