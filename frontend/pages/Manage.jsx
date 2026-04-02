@@ -29,6 +29,7 @@ const INITIAL_PANTRY_DATA = {
         name: "Canned Black Beans",
         category: "Non-Perishables",
         quantity: 45,
+        unit: "cans",
         status: "RUNNING LOW",
         wishlist: true,
       },
@@ -37,6 +38,7 @@ const INITIAL_PANTRY_DATA = {
         name: "Whole Wheat Pasta",
         category: "Dry Goods",
         quantity: 120,
+        unit: "lbs",
         status: "IN STOCK",
         wishlist: false,
       },
@@ -71,6 +73,7 @@ export default function Manage() {
     name: "",
     category: "Non-Perishables",
     quantity: 0,
+    unit: "units",
     status: "IN STOCK",
     wishlist: false,
   });
@@ -86,6 +89,7 @@ export default function Manage() {
       name: "",
       category: "Non-Perishables",
       quantity: 0,
+      unit: "units",
       status: "IN STOCK",
       wishlist: false,
     });
@@ -360,6 +364,7 @@ export default function Manage() {
                   <th className="ps-4 py-3">Item Name</th>
                   <th>Category</th>
                   <th>Quantity</th>
+                  <th>Unit</th>
                   <th>Status</th>
                   <th className="pe-4 text-end">Actions</th>
                 </tr>
@@ -370,6 +375,7 @@ export default function Manage() {
                     <td className="ps-4 fw-bold">{item.name}</td>
                     <td>{item.category}</td>
                     <td>{item.quantity}</td>
+                    <td>{item.unit || 'units'}</td>
                     <td>
                       <Badge
                         bg={STATUS_VARIANT[item.status]}
@@ -495,6 +501,23 @@ export default function Manage() {
                     }
                     className="rounded-3"
                   />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label className="small fw-bold text-muted">Unit</Form.Label>
+                  <Form.Select
+                    value={formData.unit}
+                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                    className="rounded-3"
+                  >
+                    <option value="">Select unit</option>
+                    <option value="lbs">lbs (pounds)</option>
+                    <option value="cans">cans</option>
+                    <option value="boxes">boxes</option>
+                    <option value="bags">bags</option>
+                    <option value="units">units</option>
+                  </Form.Select>
                 </Form.Group>
               </Col>
             </Row>
