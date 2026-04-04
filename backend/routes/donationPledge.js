@@ -2,6 +2,16 @@ const express = require('express');
 const router = express.Router();
 const DonationPledge = require('../models/DonationPledge');
 
+//Fetch existing pledges
+router.get("/", async (req, res) => {
+  try {
+    const pledges = await DonationPledge.find(); // fetch all pantries
+    res.json(pledges);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Create a new item
 router.post('/', async (req, res) => {
 

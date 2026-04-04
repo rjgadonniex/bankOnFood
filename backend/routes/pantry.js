@@ -2,7 +2,17 @@ const express = require('express');
 const router = express.Router();
 const Item = require('../models/Pantry');
 
-// Create a new item
+//Fetch existing pantries
+router.get("/", async (req, res) => {
+  try {
+    const pantries = await Pantry.find(); // fetch all pantries
+    res.json(pantries);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create a new pantry
 router.post('/', async (req, res) => {
 
   try {
@@ -33,5 +43,6 @@ router.post('/', async (req, res) => {
   }
 
 });
+
 
 module.exports = router;

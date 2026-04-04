@@ -2,6 +2,16 @@ const express = require('express');
 const router = express.Router();
 const Item = require('../models/Item');
 
+//Fetch existing items
+router.get("/", async (req, res) => {
+  try {
+    const items = await Item.find(); // fetch all items
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Create a new item
 router.post('/', async (req, res) => {
 
@@ -33,5 +43,7 @@ router.post('/', async (req, res) => {
   }
 
 });
+
+
 
 module.exports = router;
