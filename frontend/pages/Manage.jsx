@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Container, Row, Col, Card, Badge, Table, Button, Form, Nav, Modal } from "react-bootstrap";
 import {
@@ -111,7 +112,7 @@ export default function Manage() {
     }
   };
 
-  const handleSaveItem = (e) => {
+   const handleSaveItem = (e) => {
     e.preventDefault();
     if (editingItem) {
       setPantry((prev) => ({
@@ -126,7 +127,30 @@ export default function Manage() {
         ...prev,
         inventory: [...prev.inventory, newItem],
       }));
+      try {
+      const formName = formData.name;
+      const formQuantity = formData.quantity;
+      const formUnit = formData.unit;
+      const formStatus = formData.status;
+      const formWishlist = formData.wishlist;
+      const category = "69d17a3425b00026dd9aef2e"; //HARDCODED VALUE
+      const pantryID = "69d16f753c6bf22ef0bf996f";  //HARDCODED VALUE
+      axios.post('http://localhost:5001/item', { 
+        name:formName, 
+        quantity: formQuantity, 
+        status:formStatus, 
+        pantryID:pantryID, 
+        category:category, 
+        unit:formUnit, 
+        wishlist:formWishlist });
+
+      alert('Item added');
+    } catch (error) {
+      alert(console.error('Error posting data:', error));
+      console.error('Error posting data:', error);
     }
+    }
+     
     setShowItemModal(false);
   };
 

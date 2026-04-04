@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
     const { name, location, phoneNumber, email, website, manager} = req.body;
     
         // check if the pantry already exists in the database
-        const existingPantry= await Item.findOne({ name: name, location: location });
+        const existingPantry= await Pantry.findOne({ name: name, location: location });
         if (existingPantry) {
           return res.status(400).json({ message: 'This pantry already exists' });
         }
