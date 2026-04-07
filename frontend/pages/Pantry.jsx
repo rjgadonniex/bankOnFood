@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
+import axios from "axios";
 import { useParams, Link } from "react-router-dom";
 import {
   Container,
@@ -60,7 +62,10 @@ const INITIAL_DATA = {
 
 export default function PantryDetail() {
   const { id } = useParams();
-  const [pantry, setPantry] = useState(INITIAL_DATA[id] ?? INITIAL_DATA[1]);
+  //const [pantry, setPantry] = useState(INITIAL_DATA[id] ?? INITIAL_DATA[1]);
+  const [pantry, setPantry] = useState(null);
+  const [inventory, setInventory] = useState([]);
+
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [showPledgeModal, setShowPledgeModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -72,6 +77,40 @@ export default function PantryDetail() {
     quantity: "",
     unit: "",
   });
+
+  // pantry info
+  useEffect(() => {
+    const fetchPantry = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5001/Pantries`);
+        const found = res.data.find(p => p._id === id);
+        setPantry(found);
+
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchPantry();
+  }, [id]);
+
+  // item info per pantry
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5001/Items/pantry/${id}`);
+        setInventory(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchItems();
+  }, [id]);
+
+  if (!pantry) {
+    return <div>Loading...</div>;
+  }
 
   const handleGeneralDonation = (e) => {
     e.preventDefault();
@@ -158,8 +197,8 @@ export default function PantryDetail() {
               </tr>
             </thead>
             <tbody>
-              {pantry.inventory.map((item) => (
-                <tr key={item.id}>
+              {inventory.map((item) => (
+                <tr key={item._id}>
                   <td className="ps-4 fw-bold">{item.name}</td>
                   <td className="text-secondary">{item.category}</td>
                   <td>{item.quantity}</td>

@@ -6,7 +6,7 @@ const CategorySchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Pantry",
         required: true,
-        unqiue: true
+        unique: true
     },
 
   description: {

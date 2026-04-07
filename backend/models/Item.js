@@ -10,7 +10,7 @@ const ItemSchema = mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["critical", "low", "full"]
+        enum: ["CRITICAL", "RUNNING LOW", "IN STOCK"]
     },
     pantryID: {
         type: mongoose.Schema.Types.ObjectId,

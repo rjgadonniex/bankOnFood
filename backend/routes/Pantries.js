@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const Item = require('../models/Pantry');
+const Pantry = require('../models/Pantry');
 
-// Create a new item
+// Create a new pantry
 router.post('/', async (req, res) => {
 
   try {
@@ -10,7 +10,7 @@ router.post('/', async (req, res) => {
     const { name, location, phoneNumber, email, website, manager} = req.body;
     
         // check if the pantry already exists in the database
-        const existingPantry= await Item.findOne({ name: name, location: location });
+        const existingPantry= await Pantry.findOne({ name: name, location: location });
         if (existingPantry) {
           return res.status(400).json({ message: 'This pantry already exists' });
         }
@@ -32,6 +32,16 @@ router.post('/', async (req, res) => {
     res.json({ message: err });
   }
 
+});
+
+router.get('/:managerId', async (req, res) => {
+  try {
+    const pantry = await Pantry.findOne({ manager: req.params.managerId });
+    if (!pantry) return res.status(404).json({ message: 'Pantry not found' });
+    res.json(pantry);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 module.exports = router;

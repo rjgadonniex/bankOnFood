@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
+import axios from "axios";
 import { useParams, Link } from "react-router-dom";
 import { Container, Row, Col, Card, Badge, Table, Button, Form, Nav, Modal } from "react-bootstrap";
 import {
@@ -59,12 +61,14 @@ const INITIAL_PANTRY_DATA = {
 const STATUS_VARIANT = {
   "IN STOCK": "success",
   "RUNNING LOW": "warning",
-  CRITICAL: "danger",
+  "CRITICAL": "danger",
 };
 
 export default function Manage() {
   const { id } = useParams();
-  const [pantry, setPantry] = useState(INITIAL_PANTRY_DATA[id] || INITIAL_PANTRY_DATA[1]);
+  //const [pantry, setPantry] = useState(INITIAL_PANTRY_DATA[id] || INITIAL_PANTRY_DATA[1]);
+  const [pantry, setPantry] = useState(null);
+  const [inventory, setInventory] = useState([]);
   const [activeTab, setActiveTab] = useState("profile");
 
   const [showItemModal, setShowItemModal] = useState(false);
@@ -77,6 +81,40 @@ export default function Manage() {
     status: "IN STOCK",
     wishlist: false,
   });
+
+  // pantry info
+  useEffect(() => {
+    const fetchPantry = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5001/Pantries`);
+        const found = res.data.find(p => p._id === id);
+        setPantry(found);
+
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchPantry();
+  }, [id]);
+  
+  // item info per pantry
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5001/Items/pantry/${id}`);
+        setInventory(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+  
+    fetchItems();
+  }, [id]);
+
+  if (!pantry) {
+    return <div>Loading...</div>;
+  }
 
   const handlePantryChange = (e) => {
     const { name, value } = e.target;
@@ -104,28 +142,21 @@ export default function Manage() {
 
   const handleDeleteItem = (itemId) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
-      setPantry((prev) => ({
-        ...prev,
-        inventory: prev.inventory.filter((item) => item.id !== itemId),
-      }));
+      setInventory(prev => prev.filter(item => item._id !== itemId));
     }
   };
 
   const handleSaveItem = (e) => {
     e.preventDefault();
     if (editingItem) {
-      setPantry((prev) => ({
-        ...prev,
-        inventory: prev.inventory.map((item) =>
-          item.id === editingItem.id ? { ...formData, id: item.id } : item,
-        ),
-      }));
+      setInventory(prev =>
+        prev.map(item =>
+          item._id === editingItem._id ? { ...item, ...formData } : item
+        )
+      );
     } else {
-      const newItem = { ...formData, id: Date.now() };
-      setPantry((prev) => ({
-        ...prev,
-        inventory: [...prev.inventory, newItem],
-      }));
+      const newItem = { ...formData, _id: Date.now() };
+      setInventory(prev => [...prev, newItem]);
     }
     setShowItemModal(false);
   };
@@ -370,8 +401,8 @@ export default function Manage() {
                 </tr>
               </thead>
               <tbody>
-                {pantry.inventory.map((item) => (
-                  <tr key={item.id}>
+                {inventory.map((item) => (
+                  <tr key={item._id}>
                     <td className="ps-4 fw-bold">{item.name}</td>
                     <td>{item.category}</td>
                     <td>{item.quantity}</td>
@@ -395,7 +426,7 @@ export default function Manage() {
                       <Button
                         variant="link"
                         className="text-danger p-0 shadow-none"
-                        onClick={() => handleDeleteItem(item.id)}
+                        onClick={() => handleDeleteItem(item._id)}
                       >
                         <Trash size={18} />
                       </Button>
@@ -426,7 +457,7 @@ export default function Manage() {
                 </tr>
               </thead>
               <tbody>
-                {pantry.pledges.map((pledge) => (
+                {pantry.pledges?.map((pledge) => (
                   <tr key={pledge.id}>
                     <td className="ps-4 fw-bold">{pledge.donor}</td>
                     <td>{pledge.item}</td>
