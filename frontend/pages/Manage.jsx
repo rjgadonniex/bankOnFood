@@ -12,6 +12,7 @@ import {
   People,
   CheckCircle,
 } from "react-bootstrap-icons";
+
 import NavigationBar from "../components/NavigationBar";
 
 /*
@@ -26,26 +27,7 @@ const INITIAL_PANTRY_DATA = {
     phone: "123-456-7890",
     email: "example@email.com",
     website: "www.example.com",
-    inventory: [
-      {
-        id: 1,
-        name: "Canned Black Beans",
-        category: "Non-Perishables",
-        quantity: 45,
-        unit: "cans",
-        status: "RUNNING LOW",
-        wishlist: true,
-      },
-      {
-        id: 2,
-        name: "Whole Wheat Pasta",
-        category: "Dry Goods",
-        quantity: 120,
-        unit: "lbs",
-        status: "IN STOCK",
-        wishlist: false,
-      },
-    ],
+    inventory: parseInv,
     pledges: [
       {
         id: 101,
@@ -66,7 +48,10 @@ const STATUS_VARIANT = {
   "CRITICAL": "danger",
 };
 
+
+
 export default function Manage() {
+  
   const { id } = useParams();
   //const [pantry, setPantry] = useState(INITIAL_PANTRY_DATA[id] || INITIAL_PANTRY_DATA[1]);
   const [pantry, setPantry] = useState(null);
@@ -133,6 +118,7 @@ export default function Manage() {
       wishlist: false,
     });
     setShowItemModal(true);
+
   };
 
   const openEditModal = (item) => {
@@ -147,19 +133,24 @@ export default function Manage() {
     }
   };
 
-  const handleSaveItem = (e) => {
+   const handleSaveItem = async (e) => {
     e.preventDefault();
-    if (editingItem) {
-      setInventory(prev =>
-        prev.map(item =>
-          item._id === editingItem._id ? { ...item, ...formData } : item
-        )
-      );
-    } else {
-      const newItem = { ...formData, _id: Date.now() };
-      setInventory(prev => [...prev, newItem]);
+    try {
+      if (editingItem) {
+        setInventory(prev =>
+          prev.map(item =>
+            item._id === editingItem._id ? { ...item, ...formData } : item
+          )
+        );
+      } else {
+        const res = await axios.post("http://localhost:5001/Items", { ...formData, pantryID: id, });
+        setInventory(prev => [...prev, res.data]);
     }
+     
     setShowItemModal(false);
+    } catch (error) {
+      console.error("Error saving item: ", error);
+    }
   };
 
   const handleDeletePledge = (pledgeId) => {
@@ -168,6 +159,10 @@ export default function Manage() {
       pledges: prev.pledges.filter((p) => p.id !== pledgeId),
     }));
   };
+
+
+
+
 
   return (
     <div className="bg-light min-vh-100">
@@ -397,6 +392,7 @@ export default function Manage() {
               >
                 <PlusLg /> Add Item
               </Button>
+              
             </Card.Header>
             <Table hover responsive className="mb-0 align-middle">
               <thead className="bg-light text-muted small fw-bold text-uppercase">
@@ -519,6 +515,7 @@ export default function Manage() {
                   </Form.Label>
                   <Form.Select
                     value={formData.category}
+                    id = "categorySelect"
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="rounded-3"
                   >

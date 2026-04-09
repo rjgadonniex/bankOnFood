@@ -16,6 +16,7 @@ const PORT = process.env.PORT || 5001;
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.json());
 // Use the imported routes here when a new schema is made
 app.use('/posts', postsRoute);
 app.use('/api/auth', authRoute); 
