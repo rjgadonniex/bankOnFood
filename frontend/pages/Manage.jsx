@@ -1,5 +1,6 @@
+import React, { useState } from "react";
+import { useEffect } from "react";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Container, Row, Col, Card, Badge, Table, Button, Form, Nav, Modal } from "react-bootstrap";
 import {
@@ -14,48 +15,7 @@ import {
 
 import NavigationBar from "../components/NavigationBar";
 
-
-const pantry = "69d16f753c6bf22ef0bf996f"; //hardcoded
-let inventoryData = [];
-let parseInv = [];
-let catData = [];
-let items =[];
-//fetch data for pantry
-axios.get(`http://localhost:5001/api/item/${pantry}`)
-  .then(response => {
-    console.log("All items:", response.data);
-    inventoryData = response.data;
-    //get the category for items
-    //NEEDS TO BE FIXED WITH ASYNC REQUEST
-  for(var i=0; i<inventoryData.length; i++){
-    var item = inventoryData[i];
-    parseInv[i] = {id: i+1, dataID:item._id, name: item.name, category: item.category, 
-    quantity: item.quantity, unit: item.unit, 
-    status: item.status, wishlist: item.wishlist}
-  }
-
-  for (var i=0; i<inventoryData.length; i++){
-  axios.get(`http://localhost:5001/api/category/id/${inventoryData[i].category}`)
-  .then(response2 => {
-    console.log(response2.data);
-    parseInv[i].category = response2.data[0].description;
-  })
-  .catch(error => {
-    console.error("Error fetching items:", error);
-  });
-}
-
-  }
-
-)
-  .catch(error => {
-    console.error("Error fetching items:", error);
-  });
-
-
-
-
-  
+/*
 const INITIAL_PANTRY_DATA = {
   1: {
     pantryID: 1,
@@ -80,11 +40,12 @@ const INITIAL_PANTRY_DATA = {
     ],
   },
 };
+*/
 
 const STATUS_VARIANT = {
   "IN STOCK": "success",
   "RUNNING LOW": "warning",
-  CRITICAL: "danger",
+  "CRITICAL": "danger",
 };
 
 
@@ -92,7 +53,9 @@ const STATUS_VARIANT = {
 export default function Manage() {
   
   const { id } = useParams();
-  const [pantry, setPantry] = useState(INITIAL_PANTRY_DATA[id] || INITIAL_PANTRY_DATA[1]);
+  //const [pantry, setPantry] = useState(INITIAL_PANTRY_DATA[id] || INITIAL_PANTRY_DATA[1]);
+  const [pantry, setPantry] = useState(null);
+  const [inventory, setInventory] = useState([]);
   const [activeTab, setActiveTab] = useState("profile");
 
   const [showItemModal, setShowItemModal] = useState(false);
@@ -105,6 +68,39 @@ export default function Manage() {
     status: "IN STOCK",
     wishlist: false,
   });
+
+  // pantry info
+  useEffect(() => {
+    const fetchPantry = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5001/Pantries/${id}`);
+        console.log("Backend response:", res.data);
+        setPantry(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchPantry();
+  }, [id]);
+  
+  // item info per pantry
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5001/Items/pantry/${id}`);
+        setInventory(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+  
+    fetchItems();
+  }, [id]);
+
+  if (!pantry) {
+    return <div>Loading...</div>;
+  }
 
   const handlePantryChange = (e) => {
     const { name, value } = e.target;
@@ -133,52 +129,28 @@ export default function Manage() {
 
   const handleDeleteItem = (itemId) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
-      setPantry((prev) => ({
-        ...prev,
-        inventory: prev.inventory.filter((item) => item.id !== itemId),
-      }));
+      setInventory(prev => prev.filter(item => item._id !== itemId));
     }
   };
 
-   const handleSaveItem = (e) => {
+   const handleSaveItem = async (e) => {
     e.preventDefault();
-    if (editingItem) {
-      setPantry((prev) => ({
-        ...prev,
-        inventory: prev.inventory.map((item) =>
-          item.id === editingItem.id ? { ...formData, id: item.id } : item,
-        ),
-      }));
-    } else {
-      const newItem = { ...formData, id: Date.now() };
-      setPantry((prev) => ({
-        ...prev,
-        inventory: [...prev.inventory, newItem],
-      }));
-      try {
-      const formName = formData.name;
-      const formQuantity = formData.quantity;
-      const formUnit = formData.unit;
-      const formStatus = formData.status;
-      const formWishlist = formData.wishlist;
-      const category = "69d17a3425b00026dd9aef2e"; //HARDCODED VALUE
-      const pantryID = "69d16f753c6bf22ef0bf996f";  //HARDCODED VALUE
-      axios.post('http://localhost:5001/api/item/', { 
-        name:formName, 
-        quantity: formQuantity, 
-        status:formStatus, 
-        pantryID:pantryID, 
-        category:category, 
-        unit:formUnit, 
-        wishlist:formWishlist });
-      console.log('Item added');
-    } catch (error) {
-      console.error('Error posting data:', error);
-    }
-    
+    try {
+      if (editingItem) {
+        setInventory(prev =>
+          prev.map(item =>
+            item._id === editingItem._id ? { ...item, ...formData } : item
+          )
+        );
+      } else {
+        const res = await axios.post("http://localhost:5001/Items", { ...formData, pantryID: id, });
+        setInventory(prev => [...prev, res.data]);
     }
      
     setShowItemModal(false);
+    } catch (error) {
+      console.error("Error saving item: ", error);
+    }
   };
 
   const handleDeletePledge = (pledgeId) => {
@@ -261,9 +233,17 @@ export default function Manage() {
             <Card.Body className="p-4">
               <Form
                 id="pantry-profile-form"
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
-                  alert("Profile updated!"); // Replace with your save logic
+                  try {
+                    const res = await axios.put(`http://localhost:5001/Pantries/${id}`, pantry);
+                    console.log("Updated: ", res.data);
+                    alert("Profile updated!");
+                  }
+                  catch (err) {
+                    console.error("Update failed: ", err);
+                    alert("Failed to update profile info.");
+                  }
                 }}
               >
                 <div className="mb-4">
@@ -426,8 +406,8 @@ export default function Manage() {
                 </tr>
               </thead>
               <tbody>
-                {pantry.inventory.map((item) => (
-                  <tr key={item.id}>
+                {inventory.map((item) => (
+                  <tr key={item._id}>
                     <td className="ps-4 fw-bold">{item.name}</td>
                     <td>{item.category}</td>
                     <td>{item.quantity}</td>
@@ -451,7 +431,7 @@ export default function Manage() {
                       <Button
                         variant="link"
                         className="text-danger p-0 shadow-none"
-                        onClick={() => handleDeleteItem(item.id)}
+                        onClick={() => handleDeleteItem(item._id)}
                       >
                         <Trash size={18} />
                       </Button>
@@ -482,7 +462,7 @@ export default function Manage() {
                 </tr>
               </thead>
               <tbody>
-                {pantry.pledges.map((pledge) => (
+                {pantry.pledges?.map((pledge) => (
                   <tr key={pledge.id}>
                     <td className="ps-4 fw-bold">{pledge.donor}</td>
                     <td>{pledge.item}</td>

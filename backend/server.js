@@ -5,10 +5,10 @@ const cors = require('cors');
  // Import the routes here evertime a new schema is made
 const postsRoute = require('./routes/posts');
 const authRoute = require('./routes/auth');
-const itemRoute = require('./routes/item');
-const catRoute = require('./routes/category');
-const pantryRoute = require('./routes/pantry');
-const donationRoute = require('./routes/donationPledge');
+const itemRoute = require('./routes/Items');
+const catRoute = require('./routes/Categories');
+const pantryRoute = require('./routes/Pantries');
+const donationRoute = require('./routes/DonationPledges');
 require('dotenv').config();
 
 const app = express();
@@ -20,10 +20,10 @@ app.use(express.json());
 // Use the imported routes here when a new schema is made
 app.use('/posts', postsRoute);
 app.use('/api/auth', authRoute); 
-app.use('/api/item', itemRoute);
-app.use('/api/category', catRoute);
-app.use('/pantry', pantryRoute);
-app.use('/api/donationPledge', donationRoute);
+app.use('/Items', itemRoute);
+app.use('/Categories', catRoute);
+app.use('/Pantries', pantryRoute);
+app.use('/DonationPledges', donationRoute);
 
 // MongoDB connection
 mongoose.connect(process.env.DB_CONNECTION)

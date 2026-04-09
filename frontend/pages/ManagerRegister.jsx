@@ -48,6 +48,8 @@ export default function ManagerRegister() {
       });
 
       const managerId = authResponse.data.user.id;
+      const response = await axios.get(`http://localhost:5001/Pantries/${managerId}`);
+      setPantryData(response.data);
 
       // prepare the Pantry Data
       const pantryPayload = {
@@ -61,7 +63,7 @@ export default function ManagerRegister() {
       };
 
       // Uncomment and update this when the pantries.js route is done, or mess around with how you want to route the pantry stuff
-      // await axios.post("http://localhost:5001/api/pantries", pantryPayload);
+      await axios.post("http://localhost:5001/Pantries", pantryPayload);
       
       console.log("Pantry Payload ready for backend:", pantryPayload);
 
