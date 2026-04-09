@@ -156,7 +156,6 @@ export default function Manage() {
         inventory: [...prev.inventory, newItem],
       }));
       try {
-        alert('test');
       const formName = formData.name;
       const formQuantity = formData.quantity;
       const formUnit = formData.unit;
