@@ -3,10 +3,20 @@ const router = express.Router();
 const DonationPledge = require('../models/DonationPledge');
 
 //Fetch existing pledges
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const pledges = await DonationPledge.find(); // fetch all pantries
     res.json(pledges);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// fetch all pledges related to given pantry
+router.get('/:pantry', async (req, res) => {
+  try {
+    const items = await DonationPledge.find({ pantryID: req.params.pantry }); 
+    res.json(items);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

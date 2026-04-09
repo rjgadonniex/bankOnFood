@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const Item = require('../models/Pantry');
+const Pantry = require('../models/Pantry');
 
 //Fetch existing pantries
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const pantries = await Pantry.find(); // fetch all pantries
     res.json(pantries);
