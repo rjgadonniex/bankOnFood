@@ -6,7 +6,7 @@ const PantrySchema = mongoose.Schema({
   latitude: Number,
   longitude: Number,
   hours: String,
-  phone: String,
+  phone: String, 
   email: String,
   website: String,
 

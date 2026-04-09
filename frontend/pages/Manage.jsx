@@ -14,6 +14,7 @@ import {
 } from "react-bootstrap-icons";
 import NavigationBar from "../components/NavigationBar";
 
+/*
 const INITIAL_PANTRY_DATA = {
   1: {
     pantryID: 1,
@@ -57,6 +58,7 @@ const INITIAL_PANTRY_DATA = {
     ],
   },
 };
+*/
 
 const STATUS_VARIANT = {
   "IN STOCK": "success",
@@ -86,10 +88,9 @@ export default function Manage() {
   useEffect(() => {
     const fetchPantry = async () => {
       try {
-        const res = await axios.get(`http://localhost:5001/Pantries`);
-        const found = res.data.find(p => p._id === id);
-        setPantry(found);
-
+        const res = await axios.get(`http://localhost:5001/Pantries/${id}`);
+        console.log("Backend response:", res.data);
+        setPantry(res.data);
       } catch (err) {
         console.error(err);
       }
@@ -237,9 +238,17 @@ export default function Manage() {
             <Card.Body className="p-4">
               <Form
                 id="pantry-profile-form"
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
-                  alert("Profile updated!"); // Replace with your save logic
+                  try {
+                    const res = await axios.put(`http://localhost:5001/Pantries/${id}`, pantry);
+                    console.log("Updated: ", res.data);
+                    alert("Profile updated!");
+                  }
+                  catch (err) {
+                    console.error("Update failed: ", err);
+                    alert("Failed to update profile info.");
+                  }
                 }}
               >
                 <div className="mb-4">
