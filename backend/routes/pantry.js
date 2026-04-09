@@ -1,8 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const Item = require('../models/Pantry');
+const Pantry = require('../models/Pantry');
 
-// Create a new item
+//Fetch existing pantries
+router.get('/', async (req, res) => {
+  try {
+    const pantries = await Pantry.find(); // fetch all pantries
+    res.json(pantries);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create a new pantry
 router.post('/', async (req, res) => {
 
   try {
@@ -10,7 +20,7 @@ router.post('/', async (req, res) => {
     const { name, location, phoneNumber, email, website, manager} = req.body;
     
         // check if the pantry already exists in the database
-        const existingPantry= await Item.findOne({ name: name, location: location });
+        const existingPantry= await Pantry.findOne({ name: name, location: location });
         if (existingPantry) {
           return res.status(400).json({ message: 'This pantry already exists' });
         }
@@ -33,5 +43,6 @@ router.post('/', async (req, res) => {
   }
 
 });
+
 
 module.exports = router;

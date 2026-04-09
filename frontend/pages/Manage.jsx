@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Container, Row, Col, Card, Badge, Table, Button, Form, Nav, Modal } from "react-bootstrap";
 import {
@@ -10,8 +11,51 @@ import {
   People,
   CheckCircle,
 } from "react-bootstrap-icons";
+
 import NavigationBar from "../components/NavigationBar";
 
+
+const pantry = "69d16f753c6bf22ef0bf996f"; //hardcoded
+let inventoryData = [];
+let parseInv = [];
+let catData = [];
+let items =[];
+//fetch data for pantry
+axios.get(`http://localhost:5001/api/item/${pantry}`)
+  .then(response => {
+    console.log("All items:", response.data);
+    inventoryData = response.data;
+    //get the category for items
+    //NEEDS TO BE FIXED WITH ASYNC REQUEST
+  for(var i=0; i<inventoryData.length; i++){
+    var item = inventoryData[i];
+    parseInv[i] = {id: i+1, dataID:item._id, name: item.name, category: item.category, 
+    quantity: item.quantity, unit: item.unit, 
+    status: item.status, wishlist: item.wishlist}
+  }
+
+  for (var i=0; i<inventoryData.length; i++){
+  axios.get(`http://localhost:5001/api/category/id/${inventoryData[i].category}`)
+  .then(response2 => {
+    console.log(response2.data);
+    parseInv[i].category = response2.data[0].description;
+  })
+  .catch(error => {
+    console.error("Error fetching items:", error);
+  });
+}
+
+  }
+
+)
+  .catch(error => {
+    console.error("Error fetching items:", error);
+  });
+
+
+
+
+  
 const INITIAL_PANTRY_DATA = {
   1: {
     pantryID: 1,
@@ -23,26 +67,7 @@ const INITIAL_PANTRY_DATA = {
     phone: "123-456-7890",
     email: "example@email.com",
     website: "www.example.com",
-    inventory: [
-      {
-        id: 1,
-        name: "Canned Black Beans",
-        category: "Non-Perishables",
-        quantity: 45,
-        unit: "cans",
-        status: "RUNNING LOW",
-        wishlist: true,
-      },
-      {
-        id: 2,
-        name: "Whole Wheat Pasta",
-        category: "Dry Goods",
-        quantity: 120,
-        unit: "lbs",
-        status: "IN STOCK",
-        wishlist: false,
-      },
-    ],
+    inventory: parseInv,
     pledges: [
       {
         id: 101,
@@ -62,7 +87,10 @@ const STATUS_VARIANT = {
   CRITICAL: "danger",
 };
 
+
+
 export default function Manage() {
+  
   const { id } = useParams();
   const [pantry, setPantry] = useState(INITIAL_PANTRY_DATA[id] || INITIAL_PANTRY_DATA[1]);
   const [activeTab, setActiveTab] = useState("profile");
@@ -94,6 +122,7 @@ export default function Manage() {
       wishlist: false,
     });
     setShowItemModal(true);
+
   };
 
   const openEditModal = (item) => {
@@ -111,7 +140,7 @@ export default function Manage() {
     }
   };
 
-  const handleSaveItem = (e) => {
+   const handleSaveItem = (e) => {
     e.preventDefault();
     if (editingItem) {
       setPantry((prev) => ({
@@ -126,7 +155,29 @@ export default function Manage() {
         ...prev,
         inventory: [...prev.inventory, newItem],
       }));
+      try {
+      const formName = formData.name;
+      const formQuantity = formData.quantity;
+      const formUnit = formData.unit;
+      const formStatus = formData.status;
+      const formWishlist = formData.wishlist;
+      const category = "69d17a3425b00026dd9aef2e"; //HARDCODED VALUE
+      const pantryID = "69d16f753c6bf22ef0bf996f";  //HARDCODED VALUE
+      axios.post('http://localhost:5001/api/item/', { 
+        name:formName, 
+        quantity: formQuantity, 
+        status:formStatus, 
+        pantryID:pantryID, 
+        category:category, 
+        unit:formUnit, 
+        wishlist:formWishlist });
+      console.log('Item added');
+    } catch (error) {
+      console.error('Error posting data:', error);
     }
+    
+    }
+     
     setShowItemModal(false);
   };
 
@@ -136,6 +187,10 @@ export default function Manage() {
       pledges: prev.pledges.filter((p) => p.id !== pledgeId),
     }));
   };
+
+
+
+
 
   return (
     <div className="bg-light min-vh-100">
@@ -357,6 +412,7 @@ export default function Manage() {
               >
                 <PlusLg /> Add Item
               </Button>
+              
             </Card.Header>
             <Table hover responsive className="mb-0 align-middle">
               <thead className="bg-light text-muted small fw-bold text-uppercase">
@@ -479,6 +535,7 @@ export default function Manage() {
                   </Form.Label>
                   <Form.Select
                     value={formData.category}
+                    id = "categorySelect"
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="rounded-3"
                   >

@@ -10,7 +10,7 @@ const ItemSchema = mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["critical", "low", "full"]
+        enum: ["IN STOCK", "RINNING LOW", "CRITICAL"]
     },
     pantryID: {
         type: mongoose.Schema.Types.ObjectId,
@@ -21,7 +21,9 @@ const ItemSchema = mongoose.Schema({
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Category"
-    }
+    },
+
+    wishlist: Boolean
 });
 
 module.exports = mongoose.model('Item', ItemSchema);

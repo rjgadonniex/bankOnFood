@@ -20,6 +20,11 @@ const DonationPledgeSchema = mongoose.Schema({
         enum: ['lbs', 'cans', 'boxes', 'bags', 'units'],
         default: 'units'
     },
+    pantryID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Pantry",
+        required: true
+    },
     status: {
         type: String,
         enum: ['pending', 'confirmed', 'received'],

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+
 const PantrySchema = mongoose.Schema({
   name: String,
   location: String,
