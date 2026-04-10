@@ -69,11 +69,13 @@ export default function Manage() {
     wishlist: false,
   });
 
+  
+ 
   // pantry info
   useEffect(() => {
     const fetchPantry = async () => {
       try {
-        const res = await axios.get(`http://localhost:5001/Pantries/${id}`);
+        const res = await axios.get(`http://localhost:5001/api/Pantries/${id}`);
         console.log("Backend response:", res.data);
         setPantry(res.data);
       } catch (err) {
@@ -87,20 +89,26 @@ export default function Manage() {
   // item info per pantry
   useEffect(() => {
     const fetchItems = async () => {
+      if(!pantry?._id){
+        return;
+      }
       try {
-        const res = await axios.get(`http://localhost:5001/Items/pantry/${id}`);
+        console.log(pantry._id);
+        const res = await axios.get(`http://localhost:5001/api/Items/${pantry._id}`);
+         console.log("Backend response:", res.data);
         setInventory(res.data);
       } catch (err) {
         console.error(err);
       }
     };
-  
     fetchItems();
-  }, [id]);
+}, [pantry]);
 
   if (!pantry) {
     return <div>Loading...</div>;
   }
+
+ 
 
   const handlePantryChange = (e) => {
     const { name, value } = e.target;
@@ -127,9 +135,16 @@ export default function Manage() {
     setShowItemModal(true);
   };
 
-  const handleDeleteItem = (itemId) => {
+  const handleDeleteItem = async (itemId) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       setInventory(prev => prev.filter(item => item._id !== itemId));
+      try {
+      console.log(itemId);
+      const response = await axios.delete(`http://localhost:5001/api/Items/${itemId}`);
+      console.log('Item deleted');
+    } catch (error) {
+      console.error('Error deleting item:', error);
+    }
     }
   };
 
@@ -137,13 +152,15 @@ export default function Manage() {
     e.preventDefault();
     try {
       if (editingItem) {
+        console.log(editingItem._id);
+        const res = await axios.put(`http://localhost:5001/api/Items/${editingItem._id}`, { ...formData });
         setInventory(prev =>
           prev.map(item =>
-            item._id === editingItem._id ? { ...item, ...formData } : item
+            item._id === editingItem._id ? { ...item, ...res.data } : item
           )
         );
       } else {
-        const res = await axios.post("http://localhost:5001/Items", { ...formData, pantryID: id, });
+        const res = await axios.post("http://localhost:5001/api/Items/", { ...formData, pantryID: pantry._id, });
         setInventory(prev => [...prev, res.data]);
     }
      
@@ -519,9 +536,15 @@ export default function Manage() {
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="rounded-3"
                   >
+                    <option>Meat & Seafood</option>
+                    <option>Dairy & Refrigerated</option>
+                    <option>Bakery</option>
+                    <option>Frozen Foods</option>
+                    <option>Beverages</option>
                     <option>Non-Perishables</option>
                     <option>Dry Goods</option>
                     <option>Produce</option>
+                    <option>Miscellaneous</option>
                   </Form.Select>
                 </Form.Group>
               </Col>

@@ -20,10 +20,10 @@ app.use(express.json());
 // Use the imported routes here when a new schema is made
 app.use('/posts', postsRoute);
 app.use('/api/auth', authRoute); 
-app.use('/Items', itemRoute);
-app.use('/Categories', catRoute);
-app.use('/Pantries', pantryRoute);
-app.use('/DonationPledges', donationRoute);
+app.use('/api/Items', itemRoute);
+app.use('/api/Categories', catRoute);
+app.use('/api/Pantries', pantryRoute);
+app.use('/api/DonationPledges', donationRoute);
 
 // MongoDB connection
 mongoose.connect(process.env.DB_CONNECTION)

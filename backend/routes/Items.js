@@ -58,10 +58,26 @@ router.post('/', async (req, res) => {
 
 }); 
 
+//update existing item
+router.put('/:id', async (req, res) => {
+
+  try {
+    const updatedItem= await Item.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedItem) {
+          return res.status(404).json({ message: 'Item not found' });
+        }
+        res.json(updatedItem);
+  } 
+  
+  catch (err) {
+    res.json({ message: err });
+  }
+
+}); 
+
 router.delete('/:id', async (req, res) => {
     try {
-        const { id } = req.params.id;
-        await Item.findByIdAndDelete(id); // Mongoose method to remove by ID
+        await Item.findByIdAndDelete(req.params.id); // Mongoose method to remove by ID
         res.status(200).json({ message: "Item deleted successfully" });
     } catch (error) {
         res.status(500).json({ error: error.message });
