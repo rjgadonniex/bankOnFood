@@ -19,8 +19,10 @@ const ItemSchema = mongoose.Schema({
     },
 
     category: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Category"
+        type: String,
+        enum: ['Produce', 'Meat & Seafood', 'Dairy & Refrigerated', 'Bakery', 'Frozen Foods', 
+            'Non-Perishables', 'Dry Goods', 'Beverages', 'Miscellaneous'],
+        default: 'Miscellaneous'
     },
 
     wishlist: Boolean

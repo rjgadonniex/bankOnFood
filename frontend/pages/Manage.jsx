@@ -48,6 +48,82 @@ const STATUS_VARIANT = {
   "CRITICAL": "danger",
 };
 
+const { id } = useParams(); //MANAGER ID
+
+// pantry info
+  useEffect(() => {
+    const fetchPantry = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5001/Pantries/${id}`); //SEARCH BY MANAGER ID
+        console.log("Backend response:", res.data);
+        setPantry(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchPantry();
+  }, [id]);
+
+let inventoryData = [];
+let parseInv = [];
+//fetch inventory data for pantry
+axios.get(`http://localhost:5001/api/Items/${pantry._id}`)
+  .then(response => {
+    console.log("All items:", response.data);
+    inventoryData = response.data;
+  for(var i=0; i<inventoryData.length; i++){
+    var item = inventoryData[i];
+    parseInv[i] = {id: i+1, dataID:item._id, name: item.name, category: item.category, 
+    quantity: item.quantity, unit: item.unit, 
+    status: item.status, wishlist: item.wishlist}
+  }
+  }
+)
+  .catch(error => {
+    console.error("Error fetching items:", error);
+  });
+
+let pledgeData = [];
+let parsePledges = [];
+//fetch inventory data for pantry
+axios.get(`http://localhost:5001/api/DonationPledges/${pantry._id}`)
+  .then(response => {
+    console.log("All Pledges:", response.data);
+    pledgeData = response.data;
+  for(var i=0; i<pledgeData.length; i++){
+    var pledge = pledgeData[i];
+    parsePledges[i] = {id: pledge.id,
+        donor: pledge.donor,
+        item: pledge.item,
+        quantity: pledge.quantity,
+        date: pledge.date
+      }
+  }
+  }
+)
+  .catch(error => {
+    console.error("Error fetching pledges:", error);
+  });
+
+  let pantryInfo = {pantryID: pantry._id, 
+  name: pantry.name, 
+  address: pantry.address, 
+  latittude: pantry.latitude,
+  longitude: pantry.longitude, 
+  hours: pantry.hours,
+  phone: pantry.phone, 
+  email: pantry.email,
+  website: pantry.website,
+  inventory: parseInv,
+  pledges: parsePledges
+}
+
+
+const INITIAL_PANTRY_DATA = {
+  1: pantryInfo
+};
+
 
 
 export default function Manage() {
@@ -88,7 +164,7 @@ export default function Manage() {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const res = await axios.get(`http://localhost:5001/Items/pantry/${id}`);
+        const res = await axios.get(`http://localhost:5001/Items/pantry/${pantry._id}`);
         setInventory(res.data);
       } catch (err) {
         console.error(err);
