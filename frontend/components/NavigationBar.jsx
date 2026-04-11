@@ -62,10 +62,7 @@ function NavigationBar() {
                 
                 {/* Show manager-specific links if applicable */}
                 {user.role === 'manager' && (
-                  <NavDropdown.Item
-                    className="fw-medium"
-                    onClick={() => navigate(`/pantry/${user.id}/manage`)}
-                  >
+                  <NavDropdown.Item href={`/pantry/${user.id}/manage`} className="fw-medium">
                     Manage Pantry
                   </NavDropdown.Item>
                 )}

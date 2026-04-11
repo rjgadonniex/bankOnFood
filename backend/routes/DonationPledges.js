@@ -15,8 +15,10 @@ router.get('/', async (req, res) => {
 // fetch all pledges related to given pantry
 router.get('/:pantry', async (req, res) => {
   try {
-    const items = await DonationPledge.find({ pantryID: req.params.pantry }); 
-    res.json(items);
+    const pledges = await DonationPledge.find({ pantryID: req.params.pantry })
+      .populate('donator', 'name email') // grabs the user's name
+      .populate('item', 'name');         // grabs the item's name
+    res.json(pledges);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -27,7 +29,7 @@ router.post('/', async (req, res) => {
 
   try {
 
-    const { donator, item, quantity, unit, pantry} = req.body;
+    const { donator, item, quantity, unit, pantryID } = req.body;
     
         //add to database
         const donation = new DonationPledge({
@@ -35,7 +37,7 @@ router.post('/', async (req, res) => {
             item,
             quantity, 
             unit,
-            pantry
+            pantryID
             //date will default to current date
         });
     //save to database and send response
@@ -44,9 +46,19 @@ router.post('/', async (req, res) => {
   } 
   
   catch (err) {
-    res.json({ message: err });
+    res.status(400).json({ message: err.message });
   }
 
+});
+
+// delete a pledge (when accepted/completed)
+router.delete('/:id', async (req, res) => {
+  try {
+    const removedPledge = await DonationPledge.findByIdAndDelete(req.params.id);
+    res.json(removedPledge);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

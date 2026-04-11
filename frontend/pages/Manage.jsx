@@ -56,7 +56,12 @@ export default function Manage() {
   //const [pantry, setPantry] = useState(INITIAL_PANTRY_DATA[id] || INITIAL_PANTRY_DATA[1]);
   const [pantry, setPantry] = useState(null);
   const [inventory, setInventory] = useState([]);
+  const [pledges, setPledges] = useState([]);
+  const [showReceiveModal, setShowReceiveModal] = useState(false);
+  const [activePledge, setActivePledge] = useState(null);
+  const [receiveQuantity, setReceiveQuantity] = useState("");
   const [activeTab, setActiveTab] = useState("profile");
+  const [error, setError] = useState("");
 
   const [showItemModal, setShowItemModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -79,7 +84,7 @@ export default function Manage() {
         console.log("Backend response:", res.data);
         setPantry(res.data);
       } catch (err) {
-        console.error(err);
+        console.error("Pantry not found. Your account may be corrupted or disconnected.");
       }
     };
 
@@ -102,7 +107,25 @@ export default function Manage() {
       }
     };
     fetchItems();
-}, [pantry]);
+  }, [pantry]);
+
+  // fetch pledges per pantry
+  useEffect(() => {
+    const fetchPledges = async () => {
+      if(!pantry?._id) return;
+      try {
+        const res = await axios.get(`http://localhost:5001/api/DonationPledges/${pantry._id}`);
+        setPledges(res.data);
+      } catch (err) {
+        console.error("Error fetching pledges:", err);
+      }
+    };
+    fetchPledges();
+  }, [pantry]);
+
+  if (error) {
+    return <div className="text-center mt-5 pt-5 text-danger fw-bold display-6">{error}</div>;
+  }
 
   if (!pantry) {
     return <div>Loading...</div>;
@@ -170,11 +193,58 @@ export default function Manage() {
     }
   };
 
-  const handleDeletePledge = (pledgeId) => {
-    setPantry((prev) => ({
-      ...prev,
-      pledges: prev.pledges.filter((p) => p.id !== pledgeId),
-    }));
+  const handleDeletePledge = async (pledgeId) => {
+    if (window.confirm("Mark this pledge as complete/removed?")) {
+      try {
+        await axios.delete(`http://localhost:5001/api/DonationPledges/${pledgeId}`);
+        setPledges(prev => prev.filter(p => p._id !== pledgeId));
+      } catch (error) {
+        console.error('Error deleting pledge:', error);
+      }
+    }
+  };
+
+  // open and pre-fill with what the donor promised
+  const handleOpenReceive = (pledge) => {
+    setActivePledge(pledge);
+    setReceiveQuantity(pledge.quantity); 
+    setShowReceiveModal(true);
+  };
+
+  // submits actual received amount to the database
+  const handleConfirmReceive = async (e) => {
+    e.preventDefault();
+    try {
+      // find the original item in our inventory to get its current quantity
+      const itemToUpdate = inventory.find(i => i._id === activePledge.item._id);
+      
+      if (!itemToUpdate) {
+         alert("Error: This item was deleted from the inventory.");
+         return;
+      }
+
+      // calculate the new total inventory
+      const newTotal = itemToUpdate.quantity + parseInt(receiveQuantity);
+
+      // update the item in the database
+      await axios.put(`http://localhost:5001/api/Items/${itemToUpdate._id}`, {
+        ...itemToUpdate,
+        quantity: newTotal
+      });
+
+      // delete the completed pledge from the database
+      await axios.delete(`http://localhost:5001/api/DonationPledges/${activePledge._id}`);
+
+      setInventory(prev => prev.map(i => i._id === itemToUpdate._id ? { ...i, quantity: newTotal } : i));
+      setPledges(prev => prev.filter(p => p._id !== activePledge._id));
+      
+      setShowReceiveModal(false);
+      alert(`Successfully added ${receiveQuantity} ${activePledge.unit} to your inventory!`);
+
+    } catch (err) {
+      console.error("Error receiving pledge:", err);
+      alert("Failed to process the received pledge.");
+    }
   };
 
 
@@ -186,7 +256,7 @@ export default function Manage() {
       <NavigationBar />
       <Container style={{ paddingTop: "100px" }} className="pb-5">
         <Link
-          to={`/pantry/${id || 1}`}
+          to={`/pantry/${pantry?._id}`}
           className="text-decoration-none text-muted small d-flex align-items-center mb-4"
         >
           <ChevronLeft className="me-1" /> View Public Page
@@ -253,7 +323,8 @@ export default function Manage() {
                 onSubmit={async (e) => {
                   e.preventDefault();
                   try {
-                    const res = await axios.put(`http://localhost:5001/Pantries/${id}`, pantry);
+                    const { _id, manager, pledges, __v, ...updateData } = pantry;
+                    const res = await axios.put(`http://localhost:5001/api/Pantries/${id}`, updateData);
                     console.log("Updated: ", res.data);
                     alert("Profile updated!");
                   }
@@ -479,26 +550,32 @@ export default function Manage() {
                 </tr>
               </thead>
               <tbody>
-                {pantry.pledges?.map((pledge) => (
-                  <tr key={pledge.id}>
-                    <td className="ps-4 fw-bold">{pledge.donor}</td>
-                    <td>{pledge.item}</td>
-                    <td>{pledge.quantity}</td>
-                    <td className="text-secondary small">{pledge.date}</td>
+                {pledges.length > 0 ? pledges.map((pledge) => (
+                  <tr key={pledge._id}>
+                    {/* use .name because of Mongoose populate */}
+                    <td className="ps-4 fw-bold">{pledge.donator?.name || "Anonymous User"}</td>
+                    <td>{pledge.item?.name || "Unknown Item"}</td>
+                    <td>{pledge.quantity} {pledge.unit}</td>
+                    <td className="text-secondary small">{new Date(pledge.datePledged).toLocaleDateString()}</td>
                     <td className="pe-4 text-end">
-                      <Button variant="link" className="text-success p-0 me-3 shadow-none">
+                      {/* right now both Check and Trash just delete the pledge to clear it out */}
+                      <Button variant="link" className="text-success p-0 me-3 shadow-none" onClick={() => handleOpenReceive(pledge)}>
                         <CheckCircle size={20} />
                       </Button>
                       <Button
                         variant="link"
                         className="text-danger p-0 shadow-none"
-                        onClick={() => handleDeletePledge(pledge.id)}
+                        onClick={() => handleDeletePledge(pledge._id)}
                       >
                         <Trash size={18} />
                       </Button>
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td colSpan="5" className="text-center py-4 text-muted">No active pledges at the moment.</td>
+                  </tr>
+                )}
               </tbody>
             </Table>
           </Card>
@@ -612,6 +689,46 @@ export default function Manage() {
               {editingItem ? "Update Item" : "Save to Inventory"}
             </Button>
           </Form>
+        </Modal.Body>
+      </Modal>
+
+      {/* receive donation modal */}
+      <Modal show={showReceiveModal} onHide={() => setShowReceiveModal(false)} centered>
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="fw-bold">Receive Donation</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {activePledge && (
+            <Form onSubmit={handleConfirmReceive}>
+              <div className="mb-4 text-center">
+                <h5 className="text-primary mb-1">{activePledge.donator?.name || "Anonymous Donor"}</h5>
+                <p className="text-muted small">
+                  Promised: {activePledge.quantity} {activePledge.unit} of {activePledge.item?.name}
+                </p>
+              </div>
+
+              <Form.Group className="mb-4">
+                <Form.Label className="small fw-bold text-muted">ACTUAL AMOUNT RECEIVED</Form.Label>
+                <div className="input-group">
+                  <Form.Control
+                    type="number"
+                    min="0"
+                    value={receiveQuantity}
+                    onChange={(e) => setReceiveQuantity(e.target.value)}
+                    required
+                  />
+                  <span className="input-group-text bg-light text-muted fw-bold">{activePledge.unit}</span>
+                </div>
+                <Form.Text className="text-muted small">
+                  Adjust this number if the donor brought a different amount than pledged.
+                </Form.Text>
+              </Form.Group>
+
+              <Button variant="success" type="submit" className="w-100 rounded-pill fw-bold py-2 shadow-sm">
+                Confirm & Update Inventory
+              </Button>
+            </Form>
+          )}
         </Modal.Body>
       </Modal>
     </div>

@@ -37,6 +37,27 @@ router.post('/', async (req, res) => {
 
 });
 
+// fetch all pantries for public/searching 
+router.get('/', async (req, res) => {
+  try {
+    const pantries = await Pantry.find();
+    res.json(pantries);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// fetch single pantry by id
+router.get('/public/:id', async (req, res) => {
+  try {
+    const pantry = await Pantry.findById(req.params.id);
+    if (!pantry) return res.status(404).json({ message: 'Pantry not found' });
+    res.json(pantry);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 router.get('/:id', async (req, res) => {
   try {
     const pantry = await Pantry.findOne({ manager: req.params.id });

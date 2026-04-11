@@ -3,46 +3,9 @@ import { Container, Row, Col, Form, InputGroup, Card, Nav, Spinner } from "react
 import { Search as SearchIcon, Map as MapIcon, ListUl, ChevronRight } from "react-bootstrap-icons";
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from "@react-google-maps/api";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import NavigationBar from "../components/NavigationBar";
 
-const PANTRIES = [
-  {
-    id: 1,
-    name: "Test 1",
-    stockStatus: "Fully Stocked",
-    stockColor: "success",
-    lat: 29.652,
-    lng: -82.343,
-    zip: "32601",
-  },
-  {
-    id: 2,
-    name: "Test 2",
-    stockStatus: "Running Low",
-    stockColor: "warning",
-    lat: 29.638,
-    lng: -82.338,
-    zip: "32612",
-  },
-  {
-    id: 3,
-    name: "Test 3",
-    stockStatus: "Critical Stock Level",
-    stockColor: "danger",
-    lat: 29.625,
-    lng: -82.375,
-    zip: "32608",
-  },
-  {
-    id: 4,
-    name: "Test 4",
-    stockStatus: "Fully Stocked",
-    stockColor: "success",
-    lat: 29.645,
-    lng: -82.332,
-    zip: "32601",
-  },
-];
 
 const MAP_OPTIONS = {
   disableDefaultUI: true,
@@ -95,6 +58,24 @@ export default function SearchPage() {
   const [view, setView] = useState("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPantry, setSelectedPantry] = useState(null);
+  const [dbPantries, setDbPantries] = useState([]);
+
+  useEffect(() => {
+    axios.get("http://localhost:5001/api/Pantries")
+      .then(res => {
+        const formatted = res.data.map(p => ({
+          id: p._id,
+          name: p.name || "Unnamed Pantry",
+          stockStatus: "Accepting Donations", // Can maybe add a toggle or something like that for this later
+          stockColor: "success",
+          lat: parseFloat(p.latitude) || 29.6520, // defaulted view around UF
+          lng: parseFloat(p.longitude) || -82.3250,
+          zip: p.address || "",
+        }));
+        setDbPantries(formatted);
+      })
+      .catch(err => console.error("Error fetching pantries:", err));
+  }, []);
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
@@ -111,14 +92,15 @@ export default function SearchPage() {
 
   const filteredPantries = useMemo(() => {
     const query = searchQuery.toLowerCase();
-    const results = PANTRIES.filter(
+    const results = dbPantries.filter(
       (p) => p.name.toLowerCase().includes(query) || p.zip.includes(query),
     );
     if (!userLocation) return results;
     return results
       .map((p) => ({ ...p, distance: haversineDistance(userLocation, p) }))
       .sort((a, b) => a.distance - b.distance);
-  }, [searchQuery, userLocation]);
+      
+  }, [searchQuery, userLocation, dbPantries]);
 
   const handleSelectPantry = (pantry) => {
     setMapCenter({ lat: pantry.lat, lng: pantry.lng });

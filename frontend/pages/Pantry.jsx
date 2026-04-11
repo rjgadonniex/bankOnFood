@@ -78,33 +78,29 @@ export default function PantryDetail() {
     unit: "",
   });
 
-  // pantry info
+  // fetch pantry info
   useEffect(() => {
     const fetchPantry = async () => {
       try {
-        const res = await axios.get(`http://localhost:5001/Pantries`);
-        const found = res.data.find(p => p._id === id);
-        setPantry(found);
-
+        const res = await axios.get(`http://localhost:5001/api/Pantries/public/${id}`);
+        setPantry(res.data);
       } catch (err) {
         console.error(err);
       }
     };
-
     fetchPantry();
   }, [id]);
 
-  // item info per pantry
+  // fetch items for the pantry
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const res = await axios.get(`http://localhost:5001/Items/pantry/${id}`);
+        const res = await axios.get(`http://localhost:5001/api/Items/${id}`);
         setInventory(res.data);
       } catch (err) {
         console.error(err);
       }
     };
-
     fetchItems();
   }, [id]);
 
@@ -125,12 +121,37 @@ export default function PantryDetail() {
     setDonationForm({ name: "", category: "Non-Perishables", quantity: "", unit: "" });
   };
 
-  const handlePledgeSubmit = (e) => {
+  const handlePledgeSubmit = async (e) => {
     e.preventDefault();
-    alert(`Pledged ${pledgeQuantity} units of ${selectedItem.name}.`);
-    setShowPledgeModal(false);
-    setPledgeQuantity("");
-    setPledgeUnit("");
+    
+    // check if user is logged in first
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      alert("You must be logged in to make a pledge");
+      return;
+    }
+    const user = JSON.parse(storedUser);
+
+    try {
+      // send pledge to the database
+      await axios.post("http://localhost:5001/api/DonationPledges", {
+        donator: user.id,
+        item: selectedItem._id,
+        quantity: parseInt(pledgeQuantity),
+        unit: pledgeUnit,
+        pantryID: pantry._id
+      });
+
+      alert(`Successfully pledged ${pledgeQuantity} ${pledgeUnit} of ${selectedItem.name}!`);
+      
+      setShowPledgeModal(false);
+      setPledgeQuantity("");
+      setPledgeUnit("");
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to submit pledge. Please try again.");
+    }
   };
 
   return (
