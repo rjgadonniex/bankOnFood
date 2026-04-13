@@ -280,9 +280,15 @@ export default function PantryDetail() {
                       Select category
                     </option>{" "}
                     {/* Added helper option */}
+                    <option>Meat & Seafood</option>
+                    <option>Dairy & Refrigerated</option>
+                    <option>Bakery</option>
+                    <option>Frozen Foods</option>
+                    <option>Beverages</option>
                     <option>Non-Perishables</option>
                     <option>Dry Goods</option>
                     <option>Produce</option>
+                    <option>Miscellaneous</option>
                   </Form.Select>
                 </Col>
                 <Col>
