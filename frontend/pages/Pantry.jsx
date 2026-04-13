@@ -14,7 +14,16 @@ import {
   Form,
   Modal,
 } from "react-bootstrap";
-import { GeoAltFill, Clock, Search, ChevronLeft, BoxSeam } from "react-bootstrap-icons";
+import {
+  GeoAltFill,
+  Clock,
+  Search,
+  ChevronLeft,
+  BoxSeam,
+  Globe,
+  Telephone,
+  Envelope,
+} from "react-bootstrap-icons";
 import NavigationBar from "../components/NavigationBar";
 
 const STATUS_VARIANT = {
@@ -123,7 +132,7 @@ export default function PantryDetail() {
 
   const handlePledgeSubmit = async (e) => {
     e.preventDefault();
-    
+
     // check if user is logged in first
     const storedUser = localStorage.getItem("user");
     if (!storedUser) {
@@ -139,15 +148,14 @@ export default function PantryDetail() {
         item: selectedItem._id,
         quantity: parseInt(pledgeQuantity),
         unit: pledgeUnit,
-        pantryID: pantry._id
+        pantryID: pantry._id,
       });
 
       alert(`Successfully pledged ${pledgeQuantity} ${pledgeUnit} of ${selectedItem.name}!`);
-      
+
       setShowPledgeModal(false);
       setPledgeQuantity("");
       setPledgeUnit("");
-
     } catch (err) {
       console.error(err);
       alert("Failed to submit pledge. Please try again.");
@@ -168,12 +176,45 @@ export default function PantryDetail() {
         <header className="mb-5 d-flex justify-content-between align-items-end flex-wrap gap-3">
           <div>
             <div className="d-flex align-items-center gap-2 text-primary fw-bold small mb-2">
-              <GeoAltFill size={14} /> {pantry.location}
+              {pantry.address && <GeoAltFill size={14} />} {pantry.address}
             </div>
             <h1 className="fw-bold text-dark mb-3">{pantry.name}</h1>
-            <div className="text-secondary small d-flex align-items-center gap-2">
-              <Clock size={16} /> {pantry.hours}
-            </div>
+            <Row className="mt-2">
+              {pantry.hours && (
+                <Col xs="auto" className="text-secondary small d-flex align-items-center gap-2">
+                  <Clock size={16} /> {pantry.hours}
+                </Col>
+              )}
+              {pantry.website && (
+                <Col xs="auto" className="text-secondary small d-flex align-items-center gap-2">
+                  <Globe size={16} />{" "}
+                  <a
+                    href={pantry.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-decoration-none"
+                  >
+                    {pantry.website}
+                  </a>
+                </Col>
+              )}
+              {pantry.phone && (
+                <Col xs="auto" className="text-secondary small d-flex align-items-center gap-2">
+                  <Telephone size={16} />{" "}
+                  <a href={`tel:${pantry.phone}`} className="text-decoration-none">
+                    {pantry.phone}
+                  </a>
+                </Col>
+              )}
+              {pantry.email && (
+                <Col xs="auto" className="text-secondary small d-flex align-items-center gap-2">
+                  <Envelope size={16} />{" "}
+                  <a href={`mailto:${pantry.email}`} className="text-decoration-none">
+                    {pantry.email}
+                  </a>
+                </Col>
+              )}
+            </Row>
           </div>
           <Button
             variant="primary"
