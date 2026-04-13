@@ -213,7 +213,9 @@ export default function Manage() {
     e.preventDefault();
     try {
       // find the original item in our inventory to get its current quantity
-      const itemToUpdate = inventory.find((i) => i._id === activePledge.item._id);
+      const inventoryItem = inventory.find((i) => i._id === activePledge.item._id);
+      const itemToUpdate = inventoryItem || activePledge.item;
+      const isPlaceholder = itemToUpdate?.placeholder === true;
 
       if (!itemToUpdate) {
         alert("Error: This item was deleted from the inventory.");
@@ -224,7 +226,6 @@ export default function Manage() {
       const receivedUnit = receiveUnit || activePledge.unit;
 
       if (itemToUpdate.unit !== receivedUnit) {
-        // If a matching item already exists for the same name and unit, update that entry instead.
         const matchingUnitItem = inventory.find(
           (i) => i.name === itemToUpdate.name && i.unit === receivedUnit,
         );
@@ -235,6 +236,10 @@ export default function Manage() {
             ...matchingUnitItem,
             quantity: newTotal,
           });
+
+          if (isPlaceholder) {
+            await axios.delete(`http://localhost:5001/api/Items/${itemToUpdate._id}`);
+          }
 
           await axios.delete(`http://localhost:5001/api/DonationPledges/${activePledge._id}`);
 
@@ -247,28 +252,37 @@ export default function Manage() {
             quantity: receivedAmount,
             unit: receivedUnit,
             pantryID: pantry._id,
-            category: itemToUpdate.category,
+            category: itemToUpdate.category || "Miscellaneous",
             status: "IN STOCK",
             wishlist: false,
           };
 
           const response = await axios.post("http://localhost:5001/api/Items", newItem);
+
+          if (isPlaceholder) {
+            await axios.delete(`http://localhost:5001/api/Items/${itemToUpdate._id}`);
+          }
+
           await axios.delete(`http://localhost:5001/api/DonationPledges/${activePledge._id}`);
 
           setInventory((prev) => [...prev, response.data]);
         }
       } else {
-        const newTotal = itemToUpdate.quantity + receivedAmount;
-
-        await axios.put(`http://localhost:5001/api/Items/${itemToUpdate._id}`, {
+        const newTotal = Number(itemToUpdate.quantity || 0) + receivedAmount;
+        const updatedItem = {
           ...itemToUpdate,
           quantity: newTotal,
-        });
+          placeholder: false,
+          status: "IN STOCK",
+        };
 
+        await axios.put(`http://localhost:5001/api/Items/${itemToUpdate._id}`, updatedItem);
         await axios.delete(`http://localhost:5001/api/DonationPledges/${activePledge._id}`);
 
         setInventory((prev) =>
-          prev.map((i) => (i._id === itemToUpdate._id ? { ...i, quantity: newTotal } : i)),
+          inventoryItem
+            ? prev.map((i) => (i._id === itemToUpdate._id ? updatedItem : i))
+            : [...prev, updatedItem],
         );
       }
 

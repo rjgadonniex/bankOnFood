@@ -17,7 +17,7 @@ router.get('/:pantry', async (req, res) => {
   try {
     const pledges = await DonationPledge.find({ pantryID: req.params.pantry })
       .populate('donator', 'name email') // grabs the user's name
-      .populate('item', 'name');         // grabs the item's name
+      .populate('item');                 // grabs the full item details
     res.json(pledges);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -30,21 +30,21 @@ router.post('/', async (req, res) => {
   try {
 
     const { donator, item, quantity, unit, pantryID } = req.body;
-    
-        //add to database
-        const donation = new DonationPledge({
-            donator,
-            item,
-            quantity, 
-            unit,
-            pantryID
-            //date will default to current date
-        });
+
+    //add to database
+    const donation = new DonationPledge({
+      donator,
+      item,
+      quantity,
+      unit,
+      pantryID
+      //date will default to current date
+    });
     //save to database and send response
-    const savedDonation= await donation.save();
+    const savedDonation = await donation.save();
     res.json(savedDonation);
-  } 
-  
+  }
+
   catch (err) {
     res.status(400).json({ message: err.message });
   }

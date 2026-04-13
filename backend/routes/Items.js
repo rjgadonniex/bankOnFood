@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
 // fetch all items related to given pantry
 router.get('/:pantry', async (req, res) => {
   try {
-    const items = await Item.find({ pantryID: req.params.pantry });
+    const items = await Item.find({ pantryID: req.params.pantry, placeholder: { $ne: true } });
     res.json(items);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -30,7 +30,7 @@ router.post('/', async (req, res) => {
 
   try {
 
-    const { name, quantity, status, pantryID, category, unit, wishlist } = req.body;
+    const { name, quantity, status, pantryID, category, unit, wishlist, placeholder } = req.body;
 
     // check if the exact item/unit already exists in the database for this pantry
     const existingItem = await Item.findOne({ name: name, pantryID: pantryID, unit: unit });
@@ -45,7 +45,8 @@ router.post('/', async (req, res) => {
       status,
       pantryID,
       category,
-      wishlist
+      wishlist,
+      placeholder: placeholder || false
     });
     //save to database and send response
     const savedItem = await item.save();

@@ -20,12 +20,16 @@ const ItemSchema = mongoose.Schema({
 
     category: {
         type: String,
-        enum: ['Produce', 'Meat & Seafood', 'Dairy & Refrigerated', 'Bakery', 'Frozen Foods', 
+        enum: ['Produce', 'Meat & Seafood', 'Dairy & Refrigerated', 'Bakery', 'Frozen Foods',
             'Non-Perishables', 'Dry Goods', 'Beverages', 'Miscellaneous'],
         default: 'Miscellaneous'
     },
 
-    wishlist: Boolean
+    wishlist: Boolean,
+    placeholder: {
+        type: Boolean,
+        default: false
+    }
 });
 
 module.exports = mongoose.model('Item', ItemSchema);

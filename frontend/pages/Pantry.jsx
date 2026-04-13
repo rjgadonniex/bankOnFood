@@ -117,17 +117,58 @@ export default function PantryDetail() {
     return <div>Loading...</div>;
   }
 
-  const handleGeneralDonation = (e) => {
+  const handleGeneralDonation = async (e) => {
     e.preventDefault();
-    const newItem = {
-      id: Date.now(),
-      ...donationForm,
-      status: "IN STOCK",
-      wishlist: false,
-    };
-    setPantry({ ...pantry, inventory: [newItem, ...pantry.inventory] });
-    setShowDonationModal(false);
-    setDonationForm({ name: "", category: "Non-Perishables", quantity: "", unit: "" });
+
+    try {
+      const quantity = parseInt(donationForm.quantity, 10);
+      if (!donationForm.name || !donationForm.unit || !donationForm.category || !quantity) {
+        alert("Please complete the donation form before submitting.");
+        return;
+      }
+
+      const storedUser = localStorage.getItem("user");
+      const user = storedUser ? JSON.parse(storedUser) : null;
+      const donatorId = user?.id;
+
+      const existingItem = inventory.find(
+        (item) =>
+          item.name.toLowerCase().trim() === donationForm.name.toLowerCase().trim() &&
+          item.unit === donationForm.unit,
+      );
+
+      const itemId = existingItem
+        ? existingItem._id
+        : (
+            await axios.post("http://localhost:5001/api/Items", {
+              name: donationForm.name.trim(),
+              category: donationForm.category,
+              quantity: 0,
+              unit: donationForm.unit,
+              status: "CRITICAL",
+              wishlist: false,
+              pantryID: pantry._id,
+              placeholder: true,
+            })
+          ).data._id;
+
+      await axios.post("http://localhost:5001/api/DonationPledges", {
+        donator: donatorId,
+        item: itemId,
+        quantity,
+        unit: donationForm.unit,
+        pantryID: pantry._id,
+      });
+
+      setShowDonationModal(false);
+      setDonationForm({ name: "", category: "Non-Perishables", quantity: "", unit: "" });
+      alert(
+        `Successfully created a donation pledge for ${quantity} ${donationForm.unit} of ${donationForm.name}!`,
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to submit donation. Please try again.");
+    }
   };
 
   const handlePledgeSubmit = async (e) => {
