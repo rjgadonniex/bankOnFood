@@ -57,6 +57,7 @@ export default function Manage() {
   const [showReceiveModal, setShowReceiveModal] = useState(false);
   const [activePledge, setActivePledge] = useState(null);
   const [receiveQuantity, setReceiveQuantity] = useState("");
+  const [receiveUnit, setReceiveUnit] = useState("units");
   const [activeTab, setActiveTab] = useState("profile");
   const [error, setError] = useState("");
 
@@ -203,6 +204,7 @@ export default function Manage() {
   const handleOpenReceive = (pledge) => {
     setActivePledge(pledge);
     setReceiveQuantity(pledge.quantity);
+    setReceiveUnit(pledge.unit || "units");
     setShowReceiveModal(true);
   };
 
@@ -218,25 +220,61 @@ export default function Manage() {
         return;
       }
 
-      // calculate the new total inventory
-      const newTotal = itemToUpdate.quantity + parseInt(receiveQuantity);
+      const receivedAmount = parseInt(receiveQuantity);
+      const receivedUnit = receiveUnit || activePledge.unit;
 
-      // update the item in the database
-      await axios.put(`http://localhost:5001/api/Items/${itemToUpdate._id}`, {
-        ...itemToUpdate,
-        quantity: newTotal,
-      });
+      if (itemToUpdate.unit !== receivedUnit) {
+        // If a matching item already exists for the same name and unit, update that entry instead.
+        const matchingUnitItem = inventory.find(
+          (i) => i.name === itemToUpdate.name && i.unit === receivedUnit,
+        );
 
-      // delete the completed pledge from the database
-      await axios.delete(`http://localhost:5001/api/DonationPledges/${activePledge._id}`);
+        if (matchingUnitItem) {
+          const newTotal = matchingUnitItem.quantity + receivedAmount;
+          await axios.put(`http://localhost:5001/api/Items/${matchingUnitItem._id}`, {
+            ...matchingUnitItem,
+            quantity: newTotal,
+          });
 
-      setInventory((prev) =>
-        prev.map((i) => (i._id === itemToUpdate._id ? { ...i, quantity: newTotal } : i)),
-      );
+          await axios.delete(`http://localhost:5001/api/DonationPledges/${activePledge._id}`);
+
+          setInventory((prev) =>
+            prev.map((i) => (i._id === matchingUnitItem._id ? { ...i, quantity: newTotal } : i)),
+          );
+        } else {
+          const newItem = {
+            name: itemToUpdate.name,
+            quantity: receivedAmount,
+            unit: receivedUnit,
+            pantryID: pantry._id,
+            category: itemToUpdate.category,
+            status: "IN STOCK",
+            wishlist: false,
+          };
+
+          const response = await axios.post("http://localhost:5001/api/Items", newItem);
+          await axios.delete(`http://localhost:5001/api/DonationPledges/${activePledge._id}`);
+
+          setInventory((prev) => [...prev, response.data]);
+        }
+      } else {
+        const newTotal = itemToUpdate.quantity + receivedAmount;
+
+        await axios.put(`http://localhost:5001/api/Items/${itemToUpdate._id}`, {
+          ...itemToUpdate,
+          quantity: newTotal,
+        });
+
+        await axios.delete(`http://localhost:5001/api/DonationPledges/${activePledge._id}`);
+
+        setInventory((prev) =>
+          prev.map((i) => (i._id === itemToUpdate._id ? { ...i, quantity: newTotal } : i)),
+        );
+      }
+
       setPledges((prev) => prev.filter((p) => p._id !== activePledge._id));
-
       setShowReceiveModal(false);
-      alert(`Successfully added ${receiveQuantity} ${activePledge.unit} to your inventory!`);
+      alert(`Successfully added ${receiveQuantity} ${receivedUnit} to your inventory!`);
     } catch (err) {
       console.error("Error receiving pledge:", err);
       alert("Failed to process the received pledge.");
@@ -724,12 +762,22 @@ export default function Manage() {
                     onChange={(e) => setReceiveQuantity(e.target.value)}
                     required
                   />
-                  <span className="input-group-text bg-light text-muted fw-bold">
-                    {activePledge.unit}
-                  </span>
+                  <Form.Select
+                    value={receiveUnit}
+                    onChange={(e) => setReceiveUnit(e.target.value)}
+                    className="w-auto"
+                    required
+                  >
+                    <option value="units">units</option>
+                    <option value="lbs">lbs</option>
+                    <option value="cans">cans</option>
+                    <option value="boxes">boxes</option>
+                    <option value="bags">bags</option>
+                  </Form.Select>
                 </div>
                 <Form.Text className="text-muted small">
-                  Adjust this number if the donor brought a different amount than pledged.
+                  You can adjust both amount and unit if the donation arrived in a different form
+                  than pledged.
                 </Form.Text>
               </Form.Group>
 
