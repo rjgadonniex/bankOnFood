@@ -83,7 +83,6 @@ export default function PantryDetail() {
   const [pledgeQuantity, setPledgeQuantity] = useState("");
   const [pledgeUnit, setPledgeUnit] = useState("");
   const [query, setQuery] = useState("");
-  //const [searchQuery, setSearchQuery] = useState("");
   const [donationForm, setDonationForm] = useState({
     name: "",
     category: "Non-Perishables",
