@@ -2,6 +2,7 @@ import React, { useState , useMemo} from "react";
 import { useEffect } from "react";
 import axios from "axios";
 import { useParams, Link } from "react-router-dom";
+import { matchSorter } from 'match-sorter';
 import {
   Container,
   Row,
@@ -81,7 +82,8 @@ export default function PantryDetail() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [pledgeQuantity, setPledgeQuantity] = useState("");
   const [pledgeUnit, setPledgeUnit] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [query, setQuery] = useState("");
+  //const [searchQuery, setSearchQuery] = useState("");
   const [donationForm, setDonationForm] = useState({
     name: "",
     category: "Non-Perishables",
@@ -115,17 +117,18 @@ export default function PantryDetail() {
     fetchItems();
   }, [id]);
 
+ 
+
+    const filteredInventory = useMemo(() => {
+    return matchSorter(inventory, query, { keys: ['name', 'category'] });
+  }, [inventory, query]);
+  
+
   if (!pantry) {
     return <div>Loading...</div>;
   }
 
-    const filteredInventory= useMemo(() => {
-    const query = searchQuery.toLowerCase();
-    const results = inventory.filter(
-      (p) => p.name.toLowerCase().includes(query) ,
-    );
-    return results
-  }, [searchQuery, inventory]);
+  
 
   const handleGeneralDonation = async (e) => {
     e.preventDefault();
@@ -292,10 +295,10 @@ export default function PantryDetail() {
                     <Search size={18} />
                   </InputGroup.Text>
                   <Form.Control
-                    placeholder="Search..."
+                    placeholder="Search by item or category"
                     className="bg-transparent border-0 shadow-none ps-0"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
                   />
                 </InputGroup>
               </Col>
