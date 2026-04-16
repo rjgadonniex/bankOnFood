@@ -114,7 +114,11 @@ export default function PantryDetail() {
   }, [id]);
 
   if (!pantry) {
-    return <div>Loading...</div>;
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <Spinner animation="border" variant="primary" />
+      </div>
+    );
   }
 
   const handleGeneralDonation = async (e) => {
