@@ -61,7 +61,7 @@ export default function SearchPage() {
   const [dbPantries, setDbPantries] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:5001/api/Pantries")
+    axios.get(`${import.meta.env.VITE_API_URL}/api/Pantries`)
       .then(res => {
         const formatted = res.data.map(p => ({
           id: p._id,

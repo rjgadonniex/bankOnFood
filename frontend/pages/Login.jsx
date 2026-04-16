@@ -20,7 +20,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:5001/api/auth/login", formData);
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, formData);
       
       // save the token and user info to browser locally
       localStorage.setItem("token", response.data.token);

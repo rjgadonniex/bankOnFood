@@ -76,7 +76,7 @@ export default function Manage() {
   useEffect(() => {
     const fetchPantry = async () => {
       try {
-        const res = await axios.get(`http://localhost:5001/api/Pantries/${id}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/Pantries/${id}`);
         console.log("Backend response:", res.data);
         setPantry(res.data);
       } catch (err) {
@@ -95,7 +95,7 @@ export default function Manage() {
       }
       try {
         console.log(pantry._id);
-        const res = await axios.get(`http://localhost:5001/api/Items/${pantry._id}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/Items/${pantry._id}`);
         console.log("Backend response:", res.data);
         setInventory(res.data);
       } catch (err) {
@@ -110,7 +110,7 @@ export default function Manage() {
     const fetchPledges = async () => {
       if (!pantry?._id) return;
       try {
-        const res = await axios.get(`http://localhost:5001/api/DonationPledges/${pantry._id}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/DonationPledges/${pantry._id}`);
         setPledges(res.data);
       } catch (err) {
         console.error("Error fetching pledges:", err);
@@ -156,7 +156,7 @@ export default function Manage() {
       setInventory((prev) => prev.filter((item) => item._id !== itemId));
       try {
         console.log(itemId);
-        const response = await axios.delete(`http://localhost:5001/api/Items/${itemId}`);
+        const response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/Items/${itemId}`);
         console.log("Item deleted");
       } catch (error) {
         console.error("Error deleting item:", error);
@@ -169,14 +169,14 @@ export default function Manage() {
     try {
       if (editingItem) {
         console.log(editingItem._id);
-        const res = await axios.put(`http://localhost:5001/api/Items/${editingItem._id}`, {
+        const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/Items/${editingItem._id}`, {
           ...formData,
         });
         setInventory((prev) =>
           prev.map((item) => (item._id === editingItem._id ? { ...item, ...res.data } : item)),
         );
       } else {
-        const res = await axios.post("http://localhost:5001/api/Items/", {
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/Items/`, {
           ...formData,
           pantryID: pantry._id,
         });
@@ -192,7 +192,7 @@ export default function Manage() {
   const handleDeletePledge = async (pledgeId) => {
     if (window.confirm("Mark this pledge as complete/removed?")) {
       try {
-        await axios.delete(`http://localhost:5001/api/DonationPledges/${pledgeId}`);
+        await axios.delete(`${import.meta.env.VITE_API_URL}/api/DonationPledges/${pledgeId}`);
         setPledges((prev) => prev.filter((p) => p._id !== pledgeId));
       } catch (error) {
         console.error("Error deleting pledge:", error);
@@ -232,16 +232,16 @@ export default function Manage() {
 
         if (matchingUnitItem) {
           const newTotal = matchingUnitItem.quantity + receivedAmount;
-          await axios.put(`http://localhost:5001/api/Items/${matchingUnitItem._id}`, {
+          await axios.put(`${import.meta.env.VITE_API_URL}/api/Items/${matchingUnitItem._id}`, {
             ...matchingUnitItem,
             quantity: newTotal,
           });
 
           if (isPlaceholder) {
-            await axios.delete(`http://localhost:5001/api/Items/${itemToUpdate._id}`);
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/Items/${itemToUpdate._id}`);
           }
 
-          await axios.delete(`http://localhost:5001/api/DonationPledges/${activePledge._id}`);
+          await axios.delete(`${import.meta.env.VITE_API_URL}/api/DonationPledges/${activePledge._id}`);
 
           setInventory((prev) =>
             prev.map((i) => (i._id === matchingUnitItem._id ? { ...i, quantity: newTotal } : i)),
@@ -257,13 +257,13 @@ export default function Manage() {
             wishlist: false,
           };
 
-          const response = await axios.post("http://localhost:5001/api/Items", newItem);
+          const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/Items`, newItem);
 
           if (isPlaceholder) {
-            await axios.delete(`http://localhost:5001/api/Items/${itemToUpdate._id}`);
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/Items/${itemToUpdate._id}`);
           }
 
-          await axios.delete(`http://localhost:5001/api/DonationPledges/${activePledge._id}`);
+          await axios.delete(`${import.meta.env.VITE_API_URL}/api/DonationPledges/${activePledge._id}`);
 
           setInventory((prev) => [...prev, response.data]);
         }
@@ -276,8 +276,8 @@ export default function Manage() {
           status: "IN STOCK",
         };
 
-        await axios.put(`http://localhost:5001/api/Items/${itemToUpdate._id}`, updatedItem);
-        await axios.delete(`http://localhost:5001/api/DonationPledges/${activePledge._id}`);
+        await axios.put(`${import.meta.env.VITE_API_URL}/api/Items/${itemToUpdate._id}`, updatedItem);
+        await axios.delete(`${import.meta.env.VITE_API_URL}/api/DonationPledges/${activePledge._id}`);
 
         setInventory((prev) =>
           inventoryItem
@@ -369,7 +369,7 @@ export default function Manage() {
                   try {
                     const { _id, manager, pledges, __v, ...updateData } = pantry;
                     const res = await axios.put(
-                      `http://localhost:5001/api/Pantries/${id}`,
+                      `${import.meta.env.VITE_API_URL}/api/Pantries/${id}`,
                       updateData,
                     );
                     console.log("Updated: ", res.data);

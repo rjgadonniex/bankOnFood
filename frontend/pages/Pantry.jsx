@@ -91,7 +91,7 @@ export default function PantryDetail() {
   useEffect(() => {
     const fetchPantry = async () => {
       try {
-        const res = await axios.get(`http://localhost:5001/api/Pantries/public/${id}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/Pantries/public/${id}`);
         setPantry(res.data);
       } catch (err) {
         console.error(err);
@@ -104,7 +104,7 @@ export default function PantryDetail() {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const res = await axios.get(`http://localhost:5001/api/Items/${id}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/Items/${id}`);
         setInventory(res.data);
       } catch (err) {
         console.error(err);
@@ -140,7 +140,7 @@ export default function PantryDetail() {
       const itemId = existingItem
         ? existingItem._id
         : (
-            await axios.post("http://localhost:5001/api/Items", {
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/Item`, {
               name: donationForm.name.trim(),
               category: donationForm.category,
               quantity: 0,
@@ -152,7 +152,7 @@ export default function PantryDetail() {
             })
           ).data._id;
 
-      await axios.post("http://localhost:5001/api/DonationPledges", {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/DonationPledges`, {
         donator: donatorId,
         item: itemId,
         quantity,
@@ -184,7 +184,7 @@ export default function PantryDetail() {
 
     try {
       // send pledge to the database
-      await axios.post("http://localhost:5001/api/DonationPledges", {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/DonationPledges`, {
         donator: user.id,
         item: selectedItem._id,
         quantity: parseInt(pledgeQuantity),

@@ -1,4 +1,4 @@
-POST http://localhost:5001/posts
+POST ${import.meta.env.VITE_API_URL}/posts
 Content-Type: application/json
 
 {
