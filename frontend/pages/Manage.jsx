@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useEffect } from "react";
 import axios from "axios";
 import { useParams, Link } from "react-router-dom";
-import { Container, Row, Col, Card, Badge, Table, Button, Form, Nav, Modal } from "react-bootstrap";
+import { Container, Row, Col, Card, Badge, Table, Button, Form, Nav, Modal, Spinner } from "react-bootstrap";
 import {
   PencilSquare,
   PlusLg,
@@ -124,7 +124,11 @@ export default function Manage() {
   }
 
   if (!pantry) {
-    return <div>Loading...</div>;
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <Spinner animation="border" variant="primary" />
+      </div>
+    );
   }
 
   const handlePantryChange = (e) => {
