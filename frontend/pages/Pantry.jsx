@@ -21,6 +21,7 @@ import {
   Search,
   ChevronLeft,
   BoxSeam,
+  Spinner,
   Globe,
   Telephone,
   Envelope,
