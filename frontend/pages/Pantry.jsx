@@ -15,6 +15,7 @@ import {
   Spinner,
   Form,
   Modal,
+  Toast,
 } from "react-bootstrap";
 import {
   GeoAltFill,
@@ -90,6 +91,10 @@ export default function PantryDetail() {
     unit: "",
   });
 
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastVariant, setToastVariant] = useState("success");
+
   // fetch pantry info
   useEffect(() => {
     const fetchPantry = async () => {
@@ -134,7 +139,9 @@ export default function PantryDetail() {
     try {
       const quantity = parseInt(donationForm.quantity, 10);
       if (!donationForm.name || !donationForm.unit || !donationForm.category || !quantity) {
-        alert("Please complete the donation form before submitting.");
+        setToastMessage("Please complete the donation form before submitting.");
+        setToastVariant("danger");
+        setShowToast(true);
         return;
       }
 
@@ -148,20 +155,23 @@ export default function PantryDetail() {
           item.unit === donationForm.unit,
       );
 
-      const itemId = existingItem
-        ? existingItem._id
-        : (
-            await axios.post(`${import.meta.env.VITE_API_URL}/api/Items`, {
-              name: donationForm.name.trim(),
-              category: donationForm.category,
-              quantity: 0,
-              unit: donationForm.unit,
-              status: "CRITICAL",
-              wishlist: false,
-              pantryID: pantry._id,
-              placeholder: true,
-            })
-          ).data._id;
+      let itemId;
+      if (existingItem) {
+        itemId = existingItem._id;
+      } else {
+        const newItem = await axios.post(`${import.meta.env.VITE_API_URL}/api/Items`, {
+          name: donationForm.name.trim(),
+          category: donationForm.category,
+          quantity: 0,
+          unit: donationForm.unit,
+          status: "CRITICAL",
+          wishlist: false,
+          pantryID: pantry._id,
+          placeholder: true,
+        });
+        itemId = newItem.data._id;
+        setInventory((prev) => [...prev, newItem.data]);
+      }
 
       await axios.post(`${import.meta.env.VITE_API_URL}/api/DonationPledges`, {
         donator: donatorId,
@@ -173,12 +183,16 @@ export default function PantryDetail() {
 
       setShowDonationModal(false);
       setDonationForm({ name: "", category: "Non-Perishables", quantity: "", unit: "" });
-      alert(
+      setToastMessage(
         `Successfully created a donation pledge for ${quantity} ${donationForm.unit} of ${donationForm.name}!`,
       );
+      setToastVariant("success");
+      setShowToast(true);
     } catch (err) {
       console.error(err);
-      alert("Failed to submit donation. Please try again.");
+      setToastMessage("Failed to submit donation. Please try again.");
+      setToastVariant("danger");
+      setShowToast(true);
     }
   };
 
@@ -188,7 +202,9 @@ export default function PantryDetail() {
     // check if user is logged in first
     const storedUser = localStorage.getItem("user");
     if (!storedUser) {
-      alert("You must be logged in to make a pledge");
+      setToastMessage("You must be logged in to make a pledge");
+      setToastVariant("danger");
+      setShowToast(true);
       return;
     }
     const user = JSON.parse(storedUser);
@@ -203,14 +219,20 @@ export default function PantryDetail() {
         pantryID: pantry._id,
       });
 
-      alert(`Successfully pledged ${pledgeQuantity} ${pledgeUnit} of ${selectedItem.name}!`);
+      setToastMessage(
+        `Successfully pledged ${pledgeQuantity} ${pledgeUnit} of ${selectedItem.name}!`,
+      );
+      setToastVariant("success");
+      setShowToast(true);
 
       setShowPledgeModal(false);
       setPledgeQuantity("");
       setPledgeUnit("");
     } catch (err) {
       console.error(err);
-      alert("Failed to submit pledge. Please try again.");
+      setToastMessage("Failed to submit pledge. Please try again.");
+      setToastVariant("danger");
+      setShowToast(true);
     }
   };
 
@@ -313,7 +335,7 @@ export default function PantryDetail() {
               </tr>
             </thead>
             <tbody>
-              {filteredInventory.map((item) => (
+              {filteredInventory.filter((item) => !item.placeholder).map((item) => (
                 <tr key={item._id}>
                   <td className="ps-4 fw-bold">{item.name}</td>
                   <td className="text-secondary">{item.category}</td>
@@ -394,7 +416,7 @@ export default function PantryDetail() {
                     min="1"
                     value={donationForm.quantity}
                     onChange={(e) => setDonationForm({ ...donationForm, quantity: e.target.value })}
-                    placeholder="1"
+                    placeholder="Amount"
                   />
                 </Col>
                 <Col>
@@ -453,7 +475,7 @@ export default function PantryDetail() {
                   autoFocus
                   value={pledgeQuantity}
                   onChange={(e) => setPledgeQuantity(e.target.value)}
-                  placeholder="1"
+                  placeholder="Amount"
                 />
               </Form.Group>
               <Form.Group className="mb-3">
@@ -487,6 +509,18 @@ export default function PantryDetail() {
           </Form>
         </Modal>
       </Container>
+
+      <div className="position-fixed top-0 end-0 p-3" style={{ zIndex: 9999 }}>
+        <Toast
+          show={showToast}
+          onClose={() => setShowToast(false)}
+          delay={3000}
+          autohide
+          bg={toastVariant}
+        >
+          <Toast.Body className="text-white">{toastMessage}</Toast.Body>
+        </Toast>
+      </div>
     </div>
   );
 }

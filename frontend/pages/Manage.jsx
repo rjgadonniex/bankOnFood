@@ -3,8 +3,22 @@ import { useEffect, useMemo } from "react";
 import axios from "axios";
 import { useParams, Link } from "react-router-dom";
 
-import { matchSorter } from 'match-sorter';
-import { Container, Row, Col, Card, Badge, Table, Button, Form, Nav, Modal, InputGroup, Spinner } from "react-bootstrap";
+import { matchSorter } from "match-sorter";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Badge,
+  Table,
+  Button,
+  Form,
+  Nav,
+  Modal,
+  InputGroup,
+  Spinner,
+  Toast,
+} from "react-bootstrap";
 import {
   PencilSquare,
   PlusLg,
@@ -13,7 +27,7 @@ import {
   BoxSeam,
   People,
   CheckCircle,
-  Search
+  Search,
 } from "react-bootstrap-icons";
 
 import NavigationBar from "../components/NavigationBar";
@@ -65,6 +79,16 @@ export default function Manage() {
   const [activeTab, setActiveTab] = useState("profile");
   const [error, setError] = useState("");
 
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastVariant, setToastVariant] = useState("success");
+
+  const [showDeleteItemModal, setShowDeleteItemModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+
+  const [showDeletePledgeModal, setShowDeletePledgeModal] = useState(false);
+  const [pledgeToDelete, setPledgeToDelete] = useState(null);
+
   const [showItemModal, setShowItemModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState({
@@ -114,7 +138,9 @@ export default function Manage() {
     const fetchPledges = async () => {
       if (!pantry?._id) return;
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/DonationPledges/${pantry._id}`);
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/DonationPledges/${pantry._id}`,
+        );
         setPledges(res.data);
       } catch (err) {
         console.error("Error fetching pledges:", err);
@@ -123,9 +149,9 @@ export default function Manage() {
     fetchPledges();
   }, [pantry]);
 
-      const filteredInventory = useMemo(() => {
-      return matchSorter(inventory, query, { keys: ['name', 'category'] });
-    }, [inventory, query]);
+  const filteredInventory = useMemo(() => {
+    return matchSorter(inventory, query, { keys: ["name", "category"] });
+  }, [inventory, query]);
 
   if (error) {
     return <div className="text-center mt-5 pt-5 text-danger fw-bold display-6">{error}</div>;
@@ -163,17 +189,9 @@ export default function Manage() {
     setShowItemModal(true);
   };
 
-  const handleDeleteItem = async (itemId) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
-      setInventory((prev) => prev.filter((item) => item._id !== itemId));
-      try {
-        console.log(itemId);
-        const response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/Items/${itemId}`);
-        console.log("Item deleted");
-      } catch (error) {
-        console.error("Error deleting item:", error);
-      }
-    }
+  const handleDeleteItem = (itemId) => {
+    setItemToDelete(itemId);
+    setShowDeleteItemModal(true);
   };
 
   const handleSaveItem = async (e) => {
@@ -181,9 +199,12 @@ export default function Manage() {
     try {
       if (editingItem) {
         console.log(editingItem._id);
-        const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/Items/${editingItem._id}`, {
-          ...formData,
-        });
+        const res = await axios.put(
+          `${import.meta.env.VITE_API_URL}/api/Items/${editingItem._id}`,
+          {
+            ...formData,
+          },
+        );
         setInventory((prev) =>
           prev.map((item) => (item._id === editingItem._id ? { ...item, ...res.data } : item)),
         );
@@ -201,15 +222,37 @@ export default function Manage() {
     }
   };
 
-  const handleDeletePledge = async (pledgeId) => {
-    if (window.confirm("Mark this pledge as complete/removed?")) {
-      try {
-        await axios.delete(`${import.meta.env.VITE_API_URL}/api/DonationPledges/${pledgeId}`);
-        setPledges((prev) => prev.filter((p) => p._id !== pledgeId));
-      } catch (error) {
-        console.error("Error deleting pledge:", error);
-      }
+  const handleDeletePledge = (pledgeId) => {
+    setPledgeToDelete(pledgeId);
+    setShowDeletePledgeModal(true);
+  };
+
+  const handleConfirmDeleteItem = async () => {
+    if (!itemToDelete) return;
+    setInventory((prev) => prev.filter((item) => item._id !== itemToDelete));
+    try {
+      console.log(itemToDelete);
+      const response = await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/Items/${itemToDelete}`,
+      );
+      console.log("Item deleted");
+    } catch (error) {
+      console.error("Error deleting item:", error);
     }
+    setShowDeleteItemModal(false);
+    setItemToDelete(null);
+  };
+
+  const handleConfirmDeletePledge = async () => {
+    if (!pledgeToDelete) return;
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/DonationPledges/${pledgeToDelete}`);
+      setPledges((prev) => prev.filter((p) => p._id !== pledgeToDelete));
+    } catch (error) {
+      console.error("Error deleting pledge:", error);
+    }
+    setShowDeletePledgeModal(false);
+    setPledgeToDelete(null);
   };
 
   // open and pre-fill with what the donor promised
@@ -230,7 +273,10 @@ export default function Manage() {
       const isPlaceholder = itemToUpdate?.placeholder === true;
 
       if (!itemToUpdate) {
-        alert("Error: This item was deleted from the inventory.");
+        setToastMessage("Error: This item was deleted from the inventory.");
+        setToastVariant("danger");
+        setShowToast(true);
+        setShowReceiveModal(false);
         return;
       }
 
@@ -253,7 +299,9 @@ export default function Manage() {
             await axios.delete(`${import.meta.env.VITE_API_URL}/api/Items/${itemToUpdate._id}`);
           }
 
-          await axios.delete(`${import.meta.env.VITE_API_URL}/api/DonationPledges/${activePledge._id}`);
+          await axios.delete(
+            `${import.meta.env.VITE_API_URL}/api/DonationPledges/${activePledge._id}`,
+          );
 
           setInventory((prev) =>
             prev.map((i) => (i._id === matchingUnitItem._id ? { ...i, quantity: newTotal } : i)),
@@ -275,7 +323,9 @@ export default function Manage() {
             await axios.delete(`${import.meta.env.VITE_API_URL}/api/Items/${itemToUpdate._id}`);
           }
 
-          await axios.delete(`${import.meta.env.VITE_API_URL}/api/DonationPledges/${activePledge._id}`);
+          await axios.delete(
+            `${import.meta.env.VITE_API_URL}/api/DonationPledges/${activePledge._id}`,
+          );
 
           setInventory((prev) => [...prev, response.data]);
         }
@@ -288,8 +338,13 @@ export default function Manage() {
           status: "IN STOCK",
         };
 
-        await axios.put(`${import.meta.env.VITE_API_URL}/api/Items/${itemToUpdate._id}`, updatedItem);
-        await axios.delete(`${import.meta.env.VITE_API_URL}/api/DonationPledges/${activePledge._id}`);
+        await axios.put(
+          `${import.meta.env.VITE_API_URL}/api/Items/${itemToUpdate._id}`,
+          updatedItem,
+        );
+        await axios.delete(
+          `${import.meta.env.VITE_API_URL}/api/DonationPledges/${activePledge._id}`,
+        );
 
         setInventory((prev) =>
           inventoryItem
@@ -300,10 +355,14 @@ export default function Manage() {
 
       setPledges((prev) => prev.filter((p) => p._id !== activePledge._id));
       setShowReceiveModal(false);
-      alert(`Successfully added ${receiveQuantity} ${receivedUnit} to your inventory!`);
+      setToastMessage(`Successfully added ${receiveQuantity} ${receivedUnit} to your inventory!`);
+      setToastVariant("success");
+      setShowToast(true);
     } catch (err) {
       console.error("Error receiving pledge:", err);
-      alert("Failed to process the received pledge.");
+      setToastMessage("Failed to process the received pledge.");
+      setToastVariant("danger");
+      setShowToast(true);
     }
   };
 
@@ -385,10 +444,14 @@ export default function Manage() {
                       updateData,
                     );
                     console.log("Updated: ", res.data);
-                    alert("Profile updated!");
+                    setToastMessage("Profile updated!");
+                    setToastVariant("success");
+                    setShowToast(true);
                   } catch (err) {
                     console.error("Update failed: ", err);
-                    alert("Failed to update profile info.");
+                    setToastMessage("Failed to update profile info.");
+                    setToastVariant("danger");
+                    setShowToast(true);
                   }
                 }}
               >
@@ -532,18 +595,18 @@ export default function Manage() {
                 <BoxSeam className="text-primary" /> Stock Levels
               </h4>
               <Col md={4}>
-                              <InputGroup className="bg-light rounded-3">
-                                <InputGroup.Text className="bg-transparent border-0">
-                                  <Search size={18} />
-                                </InputGroup.Text>
-                                <Form.Control
-                                  placeholder="Search by item or category"
-                                  className="bg-transparent border-0 shadow-none ps-0"
-                                  value={query}
-                                  onChange={(e) => setQuery(e.target.value)}
-                                />
-                              </InputGroup>
-                            </Col>
+                <InputGroup className="bg-light rounded-3">
+                  <InputGroup.Text className="bg-transparent border-0">
+                    <Search size={18} />
+                  </InputGroup.Text>
+                  <Form.Control
+                    placeholder="Search by item or category"
+                    className="bg-transparent border-0 shadow-none ps-0"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                  />
+                </InputGroup>
+              </Col>
               <Button
                 variant="primary"
                 className="rounded-pill px-3 fw-bold d-flex align-items-center gap-2"
@@ -551,7 +614,6 @@ export default function Manage() {
               >
                 <PlusLg /> Add Item
               </Button>
-              
             </Card.Header>
             <Table hover responsive className="mb-0 align-middle">
               <thead className="bg-light text-muted small fw-bold text-uppercase">
@@ -832,6 +894,75 @@ export default function Manage() {
           )}
         </Modal.Body>
       </Modal>
+
+      {/* Delete Item Confirmation Modal */}
+      <Modal show={showDeleteItemModal} onHide={() => setShowDeleteItemModal(false)} centered>
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="fw-bold">Confirm Delete</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="pt-4">
+          <p className="mb-4">
+            Are you sure you want to delete this item? This action cannot be undone.
+          </p>
+          <div className="d-flex justify-content-end gap-2">
+            <Button
+              variant="danger"
+              onClick={handleConfirmDeleteItem}
+              className="rounded-pill px-4"
+            >
+              Delete
+            </Button>
+            <Button
+              variant="outline-primary"
+              onClick={() => setShowDeleteItemModal(false)}
+              className="rounded-pill px-4"
+            >
+              Cancel
+            </Button>
+          </div>
+        </Modal.Body>
+      </Modal>
+
+      {/* Delete Pledge Confirmation Modal */}
+      <Modal show={showDeletePledgeModal} onHide={() => setShowDeletePledgeModal(false)} centered>
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="fw-bold">Confirm Delete</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="pt-4">
+          <p className="mb-4">
+            Are you sure you want to mark this pledge as complete/removed? This action cannot be
+            undone.
+          </p>
+          <div className="d-flex justify-content-end gap-2">
+            <Button
+              variant="danger"
+              onClick={handleConfirmDeletePledge}
+              className="rounded-pill px-4"
+            >
+              Delete
+            </Button>
+            <Button
+              variant="outline-primary"
+              onClick={() => setShowDeletePledgeModal(false)}
+              className="rounded-pill px-4"
+            >
+              Cancel
+            </Button>
+          </div>
+        </Modal.Body>
+      </Modal>
+
+      <div className="position-fixed top-0 end-0 p-3" style={{ zIndex: 9999 }}>
+        <Toast
+          show={showToast}
+          onClose={() => setShowToast(false)}
+          delay={3000}
+          autohide
+          bg={toastVariant}
+        >
+          <Toast.Body className="text-white">{toastMessage}</Toast.Body>
+        </Toast>
+      </div>
     </div>
   );
 }
