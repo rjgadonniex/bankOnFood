@@ -209,7 +209,7 @@ export default function Manage() {
           prev.map((item) => (item._id === editingItem._id ? { ...item, ...res.data } : item)),
         );
       } else {
-        const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/Items/`, {
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/Items`, {
           ...formData,
           pantryID: pantry._id,
         });
