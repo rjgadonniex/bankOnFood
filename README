@@ -5,3 +5,6 @@ node server.js
 Frontend
 cd frontend
 npm run dev
+
+**User Manual:** https://docs.google.com/document/d/1Pc3Svk_fMkRbWm-FByCqhKPibpKGGhUo32dWk6mNhmM/edit?usp=sharing
+**ERD:** https://docs.google.com/document/d/1UlFiKNOXCsxMfNI3yMeG5Vrjwp6Sp-dajHvqghd3fAQ/edit?usp=sharing
