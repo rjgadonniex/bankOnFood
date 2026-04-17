@@ -74,6 +74,7 @@ export default function Manage() {
   const [showReceiveModal, setShowReceiveModal] = useState(false);
   const [activePledge, setActivePledge] = useState(null);
   const [receiveQuantity, setReceiveQuantity] = useState("");
+  const [receiveCategory, setReceiveCategory] = useState("Miscellaneous");
   const [query, setQuery] = useState("");
   const [receiveUnit, setReceiveUnit] = useState("units");
   const [activeTab, setActiveTab] = useState("profile");
@@ -259,7 +260,8 @@ export default function Manage() {
   const handleOpenReceive = (pledge) => {
     setActivePledge(pledge);
     setReceiveQuantity(pledge.quantity);
-    setReceiveUnit(pledge.unit || "units");
+    setReceiveUnit(pledge.item?.placeholder ? (pledge.unit || "units") : (pledge.item?.unit || "units"));
+    setReceiveCategory(pledge.item?.category || "Miscellaneous");
     setShowReceiveModal(true);
   };
 
@@ -312,7 +314,7 @@ export default function Manage() {
             quantity: receivedAmount,
             unit: receivedUnit,
             pantryID: pantry._id,
-            category: itemToUpdate.category || "Miscellaneous",
+            category: receiveCategory,
             status: "IN STOCK",
             wishlist: false,
           };
@@ -334,6 +336,7 @@ export default function Manage() {
         const updatedItem = {
           ...itemToUpdate,
           quantity: newTotal,
+          category: receiveCategory,
           placeholder: false,
           status: "IN STOCK",
         };
@@ -877,9 +880,39 @@ export default function Manage() {
                     <option value="bags">bags</option>
                   </Form.Select>
                 </div>
+                
+                {/* DYNAMIC HELPER TEXT */}
+                <div className="mt-2">
+                  {activePledge?.item?.placeholder ? (
+                    <Form.Text className="text-muted small">
+                      This is a new item! Select the unit you want to use to track it in your inventory.
+                    </Form.Text>
+                  ) : (
+                    <Form.Text className="text-primary fw-bold small">
+                      Reminder: Your inventory currently tracks this item in {activePledge?.item?.unit}.
+                    </Form.Text>
+                  )}
+                </div>
+              </Form.Group>
+              <Form.Group className="mb-4 border-top pt-3">
+                <Form.Label className="small fw-bold text-muted">ITEM CATEGORY</Form.Label>
+                <Form.Select 
+                  value={receiveCategory}
+                  onChange={(e) => setReceiveCategory(e.target.value)}
+                  required
+                >
+                  <option value="Produce">Produce</option>
+                  <option value="Meat & Seafood">Meat & Seafood</option>
+                  <option value="Dairy & Refrigerated">Dairy & Refrigerated</option>
+                  <option value="Bakery">Bakery</option>
+                  <option value="Frozen Foods">Frozen Foods</option>
+                  <option value="Non-Perishables">Non-Perishables</option>
+                  <option value="Dry Goods">Dry Goods</option>
+                  <option value="Beverages">Beverages</option>
+                  <option value="Miscellaneous">Miscellaneous</option>
+                </Form.Select>
                 <Form.Text className="text-muted small">
-                  You can adjust both amount and unit if the donation arrived in a different form
-                  than pledged.
+                  Ensure the item is placed in the correct inventory section.
                 </Form.Text>
               </Form.Group>
 

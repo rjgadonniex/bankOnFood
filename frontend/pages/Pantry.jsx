@@ -26,6 +26,8 @@ import {
   Globe,
   Telephone,
   Envelope,
+  PlusCircle,
+  Trash
 } from "react-bootstrap-icons";
 import NavigationBar from "../components/NavigationBar";
 
@@ -94,6 +96,8 @@ export default function PantryDetail() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastVariant, setToastVariant] = useState("success");
+  const [showGeneralModal, setShowGeneralModal] = useState(false);
+  const [generalPledges, setGeneralPledges] = useState([{ item: "", quantity: "", unit: "" }]);
 
   // fetch pantry info
   useEffect(() => {
@@ -196,6 +200,99 @@ export default function PantryDetail() {
     }
   };
 
+  // add row to general donation form
+  const handleAddGeneralRow = () => {
+    setGeneralPledges([...generalPledges, { item: "", quantity: "", unit: "" }]);
+  };
+
+  const handleRemoveGeneralRow = (index) => {
+    setGeneralPledges(generalPledges.filter((_, i) => i !== index));
+  };
+
+  // update field in the row
+  const handleGeneralRowChange = (index, field, value) => {
+    const updated = [...generalPledges];
+    updated[index][field] = value;
+    setGeneralPledges(updated);
+  };
+
+  // submit the batch of pledges
+  const handleGeneralSubmit = async (e) => {
+    e.preventDefault();
+    
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      setToastMessage("You must be logged in to make a pledge!");
+      setToastVariant("danger");
+      setShowToast(true);
+      return;
+    }
+    const user = JSON.parse(storedUser);
+
+    // filter out empty rows
+    const validPledges = generalPledges.filter(p => p.item && p.quantity && p.unit);
+    
+    if (validPledges.length === 0) {
+      setToastMessage("Please fill out at least one complete item.");
+      setToastVariant("warning");
+      setShowToast(true);
+      return;
+    }
+
+    try {
+      // process each pledge
+      for (let pledge of validPledges) {
+        let finalItemId = null;
+
+        // Check if donor typed in already existing item
+        const existingItem = inventory.find(
+          (i) => i.name.toLowerCase() === pledge.item.toLowerCase()
+        );
+
+        if (existingItem) {
+          // if it exists, use its real Database ID
+          finalItemId = existingItem._id;
+        } else {
+          // if a new item, create a hidden placeholder
+          const newItemRes = await axios.post("http://localhost:5001/api/Items", {
+            name: pledge.item,
+            quantity: 0,
+            unit: pledge.unit,
+            status: "RUNNING LOW",
+            pantryID: pantry._id,
+            category: "Miscellaneous",
+            wishlist: false,
+            placeholder: true
+          });
+          finalItemId = newItemRes.data._id;
+          
+        }
+
+        // create pledge
+        await axios.post("http://localhost:5001/api/DonationPledges", {
+          donator: user.id,
+          item: finalItemId,
+          quantity: parseInt(pledge.quantity),
+          unit: pledge.unit,
+          pantryID: pantry._id
+        });
+      }
+
+      setToastMessage(`Successfully pledged ${validPledges.length} items!`);
+      setToastVariant("success");
+      setShowToast(true);
+      
+      setShowGeneralModal(false);
+      setGeneralPledges([{ item: "", quantity: "", unit: "" }]);
+      
+    } catch (err) {
+      console.error(err);
+      setToastMessage("Failed to submit general donation. Please try again.");
+      setToastVariant("danger");
+      setShowToast(true);
+    }
+  };
+
   const handlePledgeSubmit = async (e) => {
     e.preventDefault();
 
@@ -293,7 +390,7 @@ export default function PantryDetail() {
           <Button
             variant="primary"
             className="rounded-pill px-4 fw-bold shadow-sm"
-            onClick={() => setShowDonationModal(true)}
+            onClick={() => setShowGeneralModal(true)}
           >
             General Donation
           </Button>
@@ -509,6 +606,100 @@ export default function PantryDetail() {
           </Form>
         </Modal>
       </Container>
+
+      {/* GENERAL DONATION MODAL (MULTI-ITEM) */}
+      <Modal show={showGeneralModal} onHide={() => setShowGeneralModal(false)} centered size="lg">
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="fw-bold">General Donation</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="text-muted small mb-4">
+            Type in the items you'd like to donate, or select from the pantry's existing inventory. You can add as many items as you want to this pledge.
+          </p>
+          <Form onSubmit={handleGeneralSubmit}>
+            {generalPledges.map((pledge, index) => (
+              <Row key={index} className="align-items-end mb-3">
+                <Col md={5}>
+                  <Form.Group>
+                    <Form.Label className="small fw-bold text-muted mb-1">ITEM</Form.Label>
+                    {/* Free-text input combined with a datalist for autocomplete */}
+                    <Form.Control 
+                      list={`inventory-options-${index}`}
+                      value={pledge.item} 
+                      onChange={(e) => handleGeneralRowChange(index, 'item', e.target.value)}
+                      placeholder="e.g. Apples"
+                      required
+                    />
+                    <datalist id={`inventory-options-${index}`}>
+                      {inventory.map(invItem => (
+                        <option key={invItem._id} value={invItem.name} />
+                      ))}
+                    </datalist>
+                  </Form.Group>
+                </Col>
+                <Col md={3}>
+                  <Form.Group>
+                    <Form.Label className="small fw-bold text-muted mb-1">QTY</Form.Label>
+                    <Form.Control 
+                      type="number" 
+                      min="1" 
+                      value={pledge.quantity} 
+                      onChange={(e) => handleGeneralRowChange(index, 'quantity', e.target.value)}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={3}>
+                  <Form.Group>
+                    <Form.Label className="small fw-bold text-muted mb-1">UNIT</Form.Label>
+                    <Form.Select 
+                      value={pledge.unit} 
+                      onChange={(e) => handleGeneralRowChange(index, 'unit', e.target.value)}
+                      required
+                    >
+                      <option value="">Unit</option>
+                      <option value="lbs">lbs</option>
+                      <option value="cans">cans</option>
+                      <option value="boxes">boxes</option>
+                      <option value="bags">bags</option>
+                      <option value="units">units</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+                <Col md={1} className="text-end">
+                  {generalPledges.length > 1 && (
+                    <Button 
+                      variant="link" 
+                      className="text-danger p-0 mb-2 shadow-none" 
+                      onClick={() => handleRemoveGeneralRow(index)}
+                    >
+                      <Trash size={20} />
+                    </Button>
+                  )}
+                </Col>
+              </Row>
+            ))}
+
+            <Button 
+              variant="outline-primary" 
+              size="sm" 
+              className="fw-bold rounded-pill mt-2 mb-4 d-flex align-items-center gap-2"
+              onClick={handleAddGeneralRow}
+            >
+              <PlusCircle /> Add Another Item
+            </Button>
+
+            <div className="d-flex justify-content-end gap-2 border-top pt-3">
+              <Button variant="light" className="rounded-pill" onClick={() => setShowGeneralModal(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit" className="rounded-pill px-4">
+                Submit All Pledges
+              </Button>
+            </div>
+          </Form>
+        </Modal.Body>
+      </Modal>
 
       <div className="position-fixed top-0 end-0 p-3" style={{ zIndex: 9999 }}>
         <Toast
