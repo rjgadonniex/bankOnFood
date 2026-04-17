@@ -12,6 +12,7 @@ import {
   Table,
   Button,
   InputGroup,
+  Spinner,
   Form,
   Modal,
 } from "react-bootstrap";
@@ -21,7 +22,6 @@ import {
   Search,
   ChevronLeft,
   BoxSeam,
-  Spinner,
   Globe,
   Telephone,
   Envelope,
