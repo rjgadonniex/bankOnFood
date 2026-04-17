@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import NavigationBar from "../components/NavigationBar";
 
-
 const MAP_OPTIONS = {
   disableDefaultUI: true,
   zoomControl: true,
@@ -61,20 +60,21 @@ export default function SearchPage() {
   const [dbPantries, setDbPantries] = useState([]);
 
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_URL}/api/Pantries`)
-      .then(res => {
-        const formatted = res.data.map(p => ({
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/api/Pantries`)
+      .then((res) => {
+        const formatted = res.data.map((p) => ({
           id: p._id,
           name: p.name || "Unnamed Pantry",
           stockStatus: "Accepting Donations", // Can maybe add a toggle or something like that for this later
           stockColor: "success",
-          lat: parseFloat(p.latitude) || 29.6520, // defaulted view around UF
-          lng: parseFloat(p.longitude) || -82.3250,
+          lat: parseFloat(p.latitude) || 29.652, // defaulted view around UF
+          lng: parseFloat(p.longitude) || -82.325,
           zip: p.address || "",
         }));
         setDbPantries(formatted);
       })
-      .catch(err => console.error("Error fetching pantries:", err));
+      .catch((err) => console.error("Error fetching pantries:", err));
   }, []);
 
   const { isLoaded } = useJsApiLoader({
@@ -99,7 +99,6 @@ export default function SearchPage() {
     return results
       .map((p) => ({ ...p, distance: haversineDistance(userLocation, p) }))
       .sort((a, b) => a.distance - b.distance);
-      
   }, [searchQuery, userLocation, dbPantries]);
 
   const handleSelectPantry = (pantry) => {
@@ -126,7 +125,7 @@ export default function SearchPage() {
       <NavigationBar />
 
       {/* Mobile tab toggle */}
-      <div className="d-md-none border-bottom bg-white" style={{ marginTop: 64 }}>
+      <div className="d-md-none border-bottom bg-white flex-shrink-0" style={{ marginTop: 64 }}>
         <Nav fill variant="pills" className="p-2 gap-2">
           {["list", "map"].map((tab) => (
             <Nav.Item key={tab}>
@@ -142,15 +141,25 @@ export default function SearchPage() {
         </Nav>
       </div>
 
-      <Container fluid className="flex-grow-1 p-0" style={{ marginTop: isMobile ? 0 : 64 }}>
-        <Row className="h-100 g-0">
+      {/* Main Content Area */}
+      <Container
+        fluid
+        className="p-0 flex-grow-1"
+        style={{
+          height: isMobile ? "calc(100vh - 120px)" : "calc(100vh - 64px)",
+          marginTop: isMobile ? 0 : 64,
+        }}
+      >
+        <Row className="h-100 g-0 flex-nowrap">
           {/* Sidebar */}
           <Col
             md={5}
             lg={4}
-            className={`h-100 flex-column border-end bg-white shadow-sm z-1 ${view === "list" ? "d-flex" : "d-none d-md-flex"}`}
+            className={`h-100 flex-column border-end bg-white shadow-sm z-1 ${
+              view === "list" ? "d-flex" : "d-none d-md-flex"
+            }`}
           >
-            <div className="p-3 p-md-4 border-bottom">
+            <div className="p-3 p-md-4 border-bottom bg-white flex-shrink-0">
               <InputGroup>
                 <InputGroup.Text className="bg-light border-end-0 text-muted">
                   <SearchIcon />
@@ -164,23 +173,28 @@ export default function SearchPage() {
               </InputGroup>
             </div>
 
-            <div className="flex-grow-1 overflow-auto p-3 p-md-4 bg-light bg-opacity-10 d-flex flex-column gap-3">
-              {filteredPantries.length > 0 ? (
-                filteredPantries.map((pantry) => (
-                  <PantryCard
-                    key={pantry.id}
-                    pantry={pantry}
-                    isSelected={selectedPantry?.id === pantry.id}
-                    onSelect={handleSelectPantry}
-                  />
-                ))
-              ) : (
-                <div className="text-center p-5 text-muted">No pantries found in this area.</div>
-              )}
+            <div
+              className="flex-grow-1 overflow-auto bg-light bg-opacity-10"
+              style={{ minHeight: 0 }}
+            >
+              <div className="p-3 p-md-4 d-flex flex-column gap-3">
+                {filteredPantries.length > 0 ? (
+                  filteredPantries.map((pantry) => (
+                    <PantryCard
+                      key={pantry.id}
+                      pantry={pantry}
+                      isSelected={selectedPantry?.id === pantry.id}
+                      onSelect={handleSelectPantry}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center p-5 text-muted">No pantries found.</div>
+                )}
+              </div>
             </div>
           </Col>
 
-          {/* Map */}
+          {/* Map Area */}
           <Col
             md={7}
             lg={8}
@@ -201,26 +215,9 @@ export default function SearchPage() {
                   <Marker
                     key={p.id}
                     position={{ lat: p.lat, lng: p.lng }}
-                    title={p.name}
                     onClick={() => handleSelectPantry(p)}
                   />
                 ))}
-
-                {selectedPantry && (
-                  <InfoWindow
-                    position={{ lat: selectedPantry.lat, lng: selectedPantry.lng }}
-                    onCloseClick={() => setSelectedPantry(null)}
-                  >
-                    <div className="pt-1 pb-1 pe-4">
-                      <Link
-                        to={`/pantry/${selectedPantry.id}`}
-                        className="text-primary text-decoration-none"
-                      >
-                        <h6 className="fw-bold mb-0 text-nowrap">{selectedPantry.name}</h6>
-                      </Link>
-                    </div>
-                  </InfoWindow>
-                )}
               </GoogleMap>
             )}
           </Col>
