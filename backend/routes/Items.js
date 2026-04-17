@@ -32,8 +32,8 @@ router.post('/', async (req, res) => {
 
     const { name, quantity, status, pantryID, category, unit, wishlist, placeholder } = req.body;
 
-    // check if the exact item/unit already exists in the database for this pantry
-    const existingItem = await Item.findOne({ name: name, pantryID: pantryID, unit: unit });
+    // check if the exact item/unit already exists in the database for this pantry (excluding placeholders)
+    const existingItem = await Item.findOne({ name: name, pantryID: pantryID, unit: unit, placeholder: false });
     if (existingItem) {
       return res.status(400).json({ message: 'This item already exists in the pantry.' });
     }

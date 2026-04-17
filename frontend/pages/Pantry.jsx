@@ -1,8 +1,8 @@
-import React, { useState , useMemo} from "react";
+import React, { useState, useMemo } from "react";
 import { useEffect } from "react";
 import axios from "axios";
 import { useParams, Link } from "react-router-dom";
-import { matchSorter } from 'match-sorter';
+import { matchSorter } from "match-sorter";
 import {
   Container,
   Row,
@@ -77,7 +77,6 @@ export default function PantryDetail() {
   const [pantry, setPantry] = useState(null);
   const [inventory, setInventory] = useState([]);
 
-
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [showPledgeModal, setShowPledgeModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -117,12 +116,9 @@ export default function PantryDetail() {
     fetchItems();
   }, [id]);
 
- 
-
-    const filteredInventory = useMemo(() => {
-    return matchSorter(inventory, query, { keys: ['name', 'category'] });
+  const filteredInventory = useMemo(() => {
+    return matchSorter(inventory, query, { keys: ["name", "category"] });
   }, [inventory, query]);
-  
 
   if (!pantry) {
     return (
@@ -131,8 +127,6 @@ export default function PantryDetail() {
       </div>
     );
   }
-
-  
 
   const handleGeneralDonation = async (e) => {
     e.preventDefault();
@@ -157,7 +151,7 @@ export default function PantryDetail() {
       const itemId = existingItem
         ? existingItem._id
         : (
-            await axios.post(`${import.meta.env.VITE_API_URL}/api/Item`, {
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/Items`, {
               name: donationForm.name.trim(),
               category: donationForm.category,
               quantity: 0,
@@ -219,8 +213,6 @@ export default function PantryDetail() {
       alert("Failed to submit pledge. Please try again.");
     }
   };
-
-
 
   return (
     <div className="bg-white min-vh-100">
@@ -399,9 +391,10 @@ export default function PantryDetail() {
                   <Form.Control
                     required
                     type="number"
+                    min="1"
                     value={donationForm.quantity}
                     onChange={(e) => setDonationForm({ ...donationForm, quantity: e.target.value })}
-                    placeholder="0" // Added placeholder
+                    placeholder="1"
                   />
                 </Col>
                 <Col>
@@ -456,10 +449,11 @@ export default function PantryDetail() {
                 <Form.Control
                   required
                   type="number"
+                  min="1"
                   autoFocus
                   value={pledgeQuantity}
                   onChange={(e) => setPledgeQuantity(e.target.value)}
-                  placeholder="0"
+                  placeholder="1"
                 />
               </Form.Group>
               <Form.Group className="mb-3">
