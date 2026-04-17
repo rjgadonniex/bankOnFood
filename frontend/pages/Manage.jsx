@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import axios from "axios";
 import { useParams, Link } from "react-router-dom";
-import { Container, Row, Col, Card, Badge, Table, Button, Form, Nav, Modal, Spinner } from "react-bootstrap";
+
+import { matchSorter } from 'match-sorter';
+import { Container, Row, Col, Card, Badge, Table, Button, Form, Nav, Modal, InputGroup, Spinner } from "react-bootstrap";
 import {
   PencilSquare,
   PlusLg,
@@ -11,6 +13,7 @@ import {
   BoxSeam,
   People,
   CheckCircle,
+  Search
 } from "react-bootstrap-icons";
 
 import NavigationBar from "../components/NavigationBar";
@@ -57,6 +60,7 @@ export default function Manage() {
   const [showReceiveModal, setShowReceiveModal] = useState(false);
   const [activePledge, setActivePledge] = useState(null);
   const [receiveQuantity, setReceiveQuantity] = useState("");
+  const [query, setQuery] = useState("");
   const [receiveUnit, setReceiveUnit] = useState("units");
   const [activeTab, setActiveTab] = useState("profile");
   const [error, setError] = useState("");
@@ -118,6 +122,10 @@ export default function Manage() {
     };
     fetchPledges();
   }, [pantry]);
+
+      const filteredInventory = useMemo(() => {
+      return matchSorter(inventory, query, { keys: ['name', 'category'] });
+    }, [inventory, query]);
 
   if (error) {
     return <div className="text-center mt-5 pt-5 text-danger fw-bold display-6">{error}</div>;
@@ -523,6 +531,19 @@ export default function Manage() {
               <h4 className="fw-bold mb-0 d-flex align-items-center gap-2">
                 <BoxSeam className="text-primary" /> Stock Levels
               </h4>
+              <Col md={4}>
+                              <InputGroup className="bg-light rounded-3">
+                                <InputGroup.Text className="bg-transparent border-0">
+                                  <Search size={18} />
+                                </InputGroup.Text>
+                                <Form.Control
+                                  placeholder="Search by item or category"
+                                  className="bg-transparent border-0 shadow-none ps-0"
+                                  value={query}
+                                  onChange={(e) => setQuery(e.target.value)}
+                                />
+                              </InputGroup>
+                            </Col>
               <Button
                 variant="primary"
                 className="rounded-pill px-3 fw-bold d-flex align-items-center gap-2"
@@ -530,6 +551,7 @@ export default function Manage() {
               >
                 <PlusLg /> Add Item
               </Button>
+              
             </Card.Header>
             <Table hover responsive className="mb-0 align-middle">
               <thead className="bg-light text-muted small fw-bold text-uppercase">
@@ -543,7 +565,7 @@ export default function Manage() {
                 </tr>
               </thead>
               <tbody>
-                {inventory.map((item) => (
+                {filteredInventory.map((item) => (
                   <tr key={item._id}>
                     <td className="ps-4 fw-bold">{item.name}</td>
                     <td>{item.category}</td>
