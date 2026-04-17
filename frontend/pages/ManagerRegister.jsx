@@ -40,7 +40,7 @@ export default function ManagerRegister() {
 
     try {
       // register the User as a 'manager'
-      const authResponse = await axios.post("http://localhost:5001/api/auth/register", {
+      const authResponse = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
         name: formData.name,
         email: formData.email,
         password: formData.password,
@@ -60,7 +60,7 @@ export default function ManagerRegister() {
         manager: managerId 
       };
 
-      await axios.post("http://localhost:5001/api/Pantries", pantryPayload);
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/Pantries`, pantryPayload);
       
       console.log("Pantry Payload ready for backend:", pantryPayload);
 

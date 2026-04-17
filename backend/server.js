@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
+//const bodyParser = require('body-parser');
 const cors = require('cors');
  // Import the routes here evertime a new schema is made
 const postsRoute = require('./routes/posts');
@@ -14,8 +14,16 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-app.use(cors());
-app.use(bodyParser.json());
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://bank-on-food.vercel.app"
+  ],
+  credentials: true
+}));
+
+//app.use(bodyParser.json());
 app.use(express.json());
 // Use the imported routes here when a new schema is made
 app.use('/posts', postsRoute);

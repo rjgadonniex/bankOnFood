@@ -34,7 +34,7 @@ export default function Register() {
     setLoading(true);
     try {
       // send data to your Node backend
-      const response = await axios.post("http://localhost:5001/api/auth/register", {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
         name: formData.name,
         email: formData.email,
         password: formData.password,
